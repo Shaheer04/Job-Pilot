@@ -46,7 +46,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 # Never exposes the password — read only
 
 
-class UserSerialzer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email"]

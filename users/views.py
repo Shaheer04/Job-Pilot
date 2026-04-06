@@ -1,7 +1,7 @@
 from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .seralizers import RegisterSerializer, UserSerialzer
+from .serializers import RegisterSerializer, UserSerializer
 
 
 # ─── View 1: Register ────────────────────────────────────────────────
@@ -31,7 +31,7 @@ class RegisterView(CreateAPIView):
 
 
 class UserProfileView(RetrieveUpdateAPIView):
-    serializer_class = UserSerialzer
+    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
