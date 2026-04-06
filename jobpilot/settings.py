@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "users",
     "jobs",
+    "ai_services"
 ]
 
 MIDDLEWARE = [
