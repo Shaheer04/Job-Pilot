@@ -34,3 +34,42 @@ Rules:
 - top_3_actions must be concrete steps they can take this week
 - Keep summary under 60 words
 """
+
+
+def build_followup_prompt(
+    job_title, company, days_since_applied, current_stage, user_name, notes
+):
+    return f"""
+You are a career coach helping a job seeker decide whether and how to follow up.
+
+JOB DETAILS:
+- Job title: {job_title}
+- Company: {company}
+- Days since applied: {days_since_applied}
+- Current stage: {current_stage}
+- Applicant name: {user_name}
+- Notes about this job: {notes if notes else "None"}
+
+Based on this, give follow-up advice.
+
+Respond ONLY with a JSON object, no markdown, no explanation outside the JSON:
+{{
+  "should_follow_up": true or false,
+  "recommended_wait_days": 0,
+  "reasoning": "specific reason based on their situation",
+  "recipient": "hiring manager or recruiter or generic",
+  "subject_line": "...",
+  "email_body": "..."
+}}
+
+Rules:
+- If current_stage is 'interview' — always recommend following up with a thank you
+- If current_stage is 'offer' — advise waiting until their stated deadline
+- If days_since_applied < 5 — recommend waiting, too soon
+- If company sounds like a large tech company (Google, Meta, Amazon, Microsoft, Apple) — advise against cold follow-up, explain why
+- Email must be under 100 words
+- Never open with "I just wanted to check in" — it is weak
+- Never sound desperate
+- subject_line and email_body must be empty strings if should_follow_up is false
+- Be specific — reference the actual job title and company name in the email
+"""
