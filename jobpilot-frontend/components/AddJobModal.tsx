@@ -12,26 +12,43 @@ export const AddJobModal = () => {
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
   const [source, setSource] = useState("");
+  const [location, setLocation] = useState("");
+  const [jobType, setJobType] = useState("");
+  const [salaryRange, setSalaryRange] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isAddJobModalOpen) return null;
 
+  const cleanText = (text: string) => {
+    return text
+      .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/gu, '') // Remove emojis
+      .replace(/[^\S\r\n]+/g, ' ') // Collapse multiple horizontal spaces, but keep newlines
+      .replace(/\n{3,}/g, '\n\n') // Collapse 3+ newlines into just 2
+      .trim();
+  };
+
   const handleExtract = async () => {
     if (!description.trim()) {
-      showToast("Please paste a job description first");
+      showToast("Please paste a description");
       return;
     }
     
-    showToast("AI: ANALYZING_BUFFER...");
+    const cleanedDescription = cleanText(description);
+    showToast("AI analyzing description...");
     try {
-      const data = await extractJob(description);
+      const data = await extractJob(cleanedDescription);
+      
       setCompany(data.company || "");
       setTitle(data.title || "");
       setSource(data.source || "");
-      showToast("AI: EXTRACTION_COMPLETE");
-    } catch (error) {
+      setLocation(data.location || "");
+      setJobType(data.job_type || "");
+      setSalaryRange(data.salary_range || "");
+      
+      showToast("Details extracted!");
+    } catch (error: unknown) {
       console.error("AI extraction failed:", error);
-      showToast("AI: EXTRACTION_FAILED");
+      showToast("AI extraction failed");
     }
   };
 
@@ -44,142 +61,160 @@ export const AddJobModal = () => {
         company,
         description,
         source,
+        location,
+        job_type: jobType,
+        salary_range: salaryRange,
       });
       // Clear and close
       setDescription("");
       setCompany("");
       setTitle("");
       setSource("");
-      showToast("JOB_ARCHIVED_SUCCESSFULLY");
+      setLocation("");
+      setJobType("");
+      setSalaryRange("");
+      showToast("Job added successfully");
       closeAddJobModal();
-    } catch (error) {
-      console.error("Failed to add job:", error);
-      showToast("ARCHIVE_OPERATION_FAILED");
+    } catch (error: any) {
+      if (error.response?.status === 400) {
+        console.error("Validation Errors:", error.response.data);
+        showToast("Check input fields");
+      } else {
+        console.error("Failed to add job:", error);
+        showToast("Failed to add job");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-surface/60 backdrop-blur-xl flex items-center justify-center p-6">
-      <div className="w-full max-w-2xl bg-surface-container-low rounded-xl shadow-2xl shadow-black/60 border border-outline-variant/15 flex flex-col max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+      <div className="w-full max-w-2xl bg-surface border border-outline-variant/20 rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
         {/* Modal Header */}
-        <div className="flex justify-between items-center px-8 pt-8 pb-4">
+        <div className="flex justify-between items-center px-8 py-6 border-b border-outline-variant/10">
           <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary">add_box</span>
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Add Job</h2>
+            <h2 className="text-xl font-bold text-white">Add New Job</h2>
           </div>
           <button 
             onClick={closeAddJobModal}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-highest transition-colors text-white"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
           >
-            <span className="material-symbols-outlined text-on-surface-variant">close</span>
+            <span className="material-symbols-outlined text-xl">close</span>
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8 scrollbar-hide">
-          <div className="space-y-10">
+        <div className="flex-1 overflow-y-auto px-8 py-8 scrollbar-hide">
+          <div className="space-y-8">
             {/* Step 1: Input Flow */}
             <section>
               <div className="flex justify-between items-center mb-4">
-                <label className="font-mono text-xs text-primary font-medium tracking-widest uppercase">
-                  Step 01 / Job Data
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                  Step 1: Paste Job Description
                 </label>
                 <button 
                   onClick={handleExtract}
                   disabled={isExtracting || !description.trim()}
-                  className={`font-mono text-[10px] px-2 py-1 rounded border border-primary/20 transition-all flex items-center gap-2 ${
-                    isExtracting ? "bg-primary/10 text-primary animate-pulse" : "text-on-surface-variant hover:bg-primary/5 hover:text-primary"
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 border ${
+                    isExtracting 
+                      ? "bg-primary/10 border-primary text-primary animate-pulse" 
+                      : "bg-primary text-on-primary-container border-primary hover:brightness-110 shadow-lg shadow-primary/20"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
-                  {isExtracting ? "AI_EXTRACTING..." : "AI_PARSER: READY"}
+                  {isExtracting ? "Extracting..." : "Auto-fill with AI"}
                 </button>
               </div>
-              <div className="relative group">
+              <div className="relative">
                 <textarea 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full h-48 bg-surface-container rounded-lg p-6 text-on-surface placeholder:text-outline border-none focus:ring-1 focus:ring-primary/50 transition-all resize-none text-base leading-relaxed outline-none" 
-                  placeholder="Paste Job Description text here..."
+                  className="w-full h-40 bg-surface-container-low rounded-lg p-4 text-on-surface placeholder:text-zinc-600 border border-outline-variant/20 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all resize-none text-sm leading-relaxed outline-none" 
+                  placeholder="Paste the full job description here..."
                 ></textarea>
-                <div className="absolute bottom-4 right-4 flex gap-2">
-                  <span className="font-mono text-[10px] text-on-surface-variant">LINES: {description.split('\n').filter(l => l).length.toString().padStart(2, '0')}</span>
-                  <span className="font-mono text-[10px] text-on-surface-variant">CHARS: {description.length.toString().padStart(3, '0')}</span>
-                </div>
               </div>
             </section>
 
             {/* Step 2: Confirmation Area */}
-            <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
               <div className="flex items-center gap-4 mb-6">
-                <div className="h-px flex-1 bg-outline-variant/20"></div>
-                <label className="font-mono text-xs text-on-surface-variant font-medium tracking-widest uppercase">
-                  Step 02 / Confirm Details
+                <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                  Step 2: Confirm Details
                 </label>
-                <div className="h-px flex-1 bg-outline-variant/20"></div>
+                <div className="h-px flex-1 bg-outline-variant/10"></div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Company Name */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase ml-1">
-                    Company Name
-                  </label>
-                  <div className="relative group">
-                    <input 
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary px-1 py-3 text-white transition-colors placeholder:text-outline-variant focus:ring-0 outline-none" 
-                      type="text" 
-                      placeholder="e.g. Starlight Systems"
-                    />
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
-                      <span className={`material-symbols-outlined text-[16px] transition-colors ${company ? 'text-tertiary' : 'text-outline-variant'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                        auto_awesome
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-400 ml-1">Company Name</label>
+                  <input 
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-md px-3 py-2.5 text-white focus:border-primary outline-none text-sm transition-all" 
+                    type="text" 
+                    placeholder="e.g. Google"
+                  />
                 </div>
+
                 {/* Job Title */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase ml-1">
-                    Job Title
-                  </label>
-                  <div className="relative group">
-                    <input 
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary px-1 py-3 text-white transition-colors placeholder:text-outline-variant focus:ring-0 outline-none" 
-                      type="text" 
-                      placeholder="e.g. Lead Interface Designer"
-                    />
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
-                      <span className={`material-symbols-outlined text-[16px] transition-colors ${title ? 'text-tertiary' : 'text-outline-variant'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                        auto_awesome
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-400 ml-1">Job Title</label>
+                  <input 
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-md px-3 py-2.5 text-white focus:border-primary outline-none text-sm transition-all" 
+                    type="text" 
+                    placeholder="e.g. Senior Frontend Engineer"
+                  />
                 </div>
+
+                {/* Location */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-400 ml-1">Location</label>
+                  <input 
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-md px-3 py-2.5 text-white focus:border-primary outline-none text-sm transition-all" 
+                    type="text" 
+                    placeholder="e.g. Remote"
+                  />
+                </div>
+
+                {/* Job Type */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-400 ml-1">Job Type</label>
+                  <input 
+                    value={jobType}
+                    onChange={(e) => setJobType(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-md px-3 py-2.5 text-white focus:border-primary outline-none text-sm transition-all" 
+                    type="text" 
+                    placeholder="e.g. Full-time"
+                  />
+                </div>
+
+                {/* Salary Range */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-400 ml-1">Salary Range</label>
+                  <input 
+                    value={salaryRange}
+                    onChange={(e) => setSalaryRange(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-md px-3 py-2.5 text-white focus:border-primary outline-none text-sm transition-all" 
+                    type="text" 
+                    placeholder="e.g. $120k - $150k"
+                  />
+                </div>
+
                 {/* Source */}
-                <div className="space-y-1 md:col-span-2">
-                  <label className="text-[10px] font-bold text-on-surface-variant tracking-wider uppercase ml-1">
-                    Source
-                  </label>
-                  <div className="relative group">
-                    <input 
-                      value={source}
-                      onChange={(e) => setSource(e.target.value)}
-                      className="w-full bg-transparent border-b border-outline-variant/40 focus:border-primary px-1 py-3 text-white transition-colors placeholder:text-outline-variant focus:ring-0 outline-none" 
-                      type="text" 
-                      placeholder="e.g. LinkedIn"
-                    />
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
-                      <span className={`material-symbols-outlined text-[16px] transition-colors ${source ? 'text-tertiary' : 'text-outline-variant'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
-                        auto_awesome
-                      </span>
-                    </div>
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-400 ml-1">Source</label>
+                  <input 
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    className="w-full bg-surface-container-low border border-outline-variant/20 rounded-md px-3 py-2.5 text-white focus:border-primary outline-none text-sm transition-all" 
+                    type="text" 
+                    placeholder="e.g. LinkedIn"
+                  />
                 </div>
               </div>
             </section>
@@ -187,27 +222,21 @@ export const AddJobModal = () => {
         </div>
 
         {/* Modal Footer / Actions */}
-        <div className="px-8 py-6 bg-surface-container border-t border-outline-variant/10 flex items-center justify-between">
-          <div className="flex items-center gap-2 opacity-60 hover:opacity-100 cursor-pointer transition-opacity">
-            <span className="material-symbols-outlined text-sm">settings</span>
-            <span className="font-mono text-[10px] tracking-tight">AUTO-PROCESS: ON</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={closeAddJobModal}
-              className="px-6 py-2.5 rounded-md text-sm font-medium text-on-surface-variant hover:text-white transition-colors"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleAddJob}
-              disabled={isLoading || isExtracting || !company || !title}
-              className="px-8 py-2.5 rounded-md bg-gradient-to-r from-primary to-primary-container text-on-primary-container font-semibold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span>{isLoading ? "Adding..." : "Add to Tracker"}</span>
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </button>
-          </div>
+        <div className="px-8 py-6 bg-zinc-900 border-t border-outline-variant/10 flex items-center justify-end gap-4">
+          <button 
+            onClick={closeAddJobModal}
+            className="px-6 py-2.5 rounded-md text-sm font-bold text-zinc-400 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleAddJob}
+            disabled={isLoading || isExtracting || !company || !title}
+            className="px-8 py-2.5 rounded-md bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-600 active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span>{isLoading ? "Adding..." : "Add to Tracker"}</span>
+            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
         </div>
       </div>
     </div>

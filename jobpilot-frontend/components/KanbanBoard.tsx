@@ -142,7 +142,6 @@ const KanbanColumn = ({
   dotColor,
   grayscale,
   onCardClick,
-  onQuickAdd,
 }: {
   id: JobStage;
   title: string;
@@ -150,7 +149,6 @@ const KanbanColumn = ({
   dotColor: string;
   grayscale?: boolean;
   onCardClick: (job: JobApplication) => void;
-  onQuickAdd: () => void;
 }) => {
   return (
     <div className={`flex flex-col w-80 shrink-0 ${grayscale ? "grayscale opacity-60" : ""}`}>
@@ -178,16 +176,6 @@ const KanbanColumn = ({
           </div>
         </SortableContext>
       </div>
-
-      <button 
-        onClick={onQuickAdd}
-        className="mt-4 flex items-center justify-center gap-2 w-full py-2 text-xs font-bold text-zinc-500 hover:text-white hover:bg-surface-container-low border border-dashed border-outline-variant/20 rounded-md transition-all group"
-      >
-        <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform" data-icon="add">
-          add
-        </span>
-        Quick Add
-      </button>
     </div>
   );
 };
@@ -200,7 +188,6 @@ export const KanbanBoard = ({
   onCardClick: (job: JobApplication) => void 
 }) => {
   const { updateStage } = useJobs();
-  const { openAddJobModal } = useUIStore();
   const [activeCard, setActiveCard] = useState<JobApplication | null>(null);
 
   const sensors = useSensors(
@@ -278,7 +265,6 @@ export const KanbanBoard = ({
               grayscale={column.grayscale}
               cards={initialJobs.filter(job => job.current_stage === column.stage)} 
               onCardClick={onCardClick} 
-              onQuickAdd={openAddJobModal}
             />
           ))}
         </div>
