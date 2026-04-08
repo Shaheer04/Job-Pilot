@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .services.health_score import calculate_stats, generate_advice
 from .services.followup import generate_followup
+from .services.extractor import extract_job_details
 from jobs.models import JobApplication
 from django.shortcuts import get_object_or_404
 
@@ -36,3 +37,16 @@ class FollowUpView(APIView):
         result = generate_followup(job, request.user)
 
         return Response({"job_id": job.id, "followup": result})
+
+
+class JobExtractionView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        description = request.data.get('description', '')
+        if not description:
+            return Response({"error": "No description provided"}, status=400)  
+        details = extract_job_details(description)
+        return Response(details)
+
+

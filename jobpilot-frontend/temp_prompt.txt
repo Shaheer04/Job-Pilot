@@ -1,0 +1,22 @@
+
+def build_extraction_prompt(description):
+    return f"""
+Extract key details from the following job description.
+
+JOB DESCRIPTION:
+{description}
+
+Respond ONLY with a JSON object, no markdown, no explanation outside the JSON:
+{{
+  "title": "the extracted job title",
+  "company": "the extracted company name",
+  "location": "the job location (Remote, SF, etc.)",
+  "job_type": "Full-time, Contract, etc.",
+  "salary_range": "extracted salary if mentioned, else empty string",
+  "source": "the likely platform (LinkedIn, Indeed, etc.) or 'External'"
+}}
+
+Rules:
+- If company or title cannot be found, use 'Unknown'
+- Keep it concise
+"""

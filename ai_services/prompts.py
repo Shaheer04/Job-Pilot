@@ -73,3 +73,31 @@ Rules:
 - subject_line and email_body must be empty strings if should_follow_up is false
 - Be specific — reference the actual job title and company name in the email
 """
+
+def build_extraction_prompt(description):
+    return f"""
+You are a job description parser. Extract structured information from the job description below.
+
+JOB DESCRIPTION:
+{description}
+
+Respond ONLY with a raw JSON object. No markdown, no code blocks, no explanation. Just the JSON.
+
+{{
+  "title": "exact job title as written in the description",
+  "company": "company name exactly as written",
+  "location": "city, country or Remote or Hybrid — exactly as mentioned",
+  "job_type": "Full-time or Part-time or Contract or Freelance or Internship",
+  "salary_range": "salary exactly as written, or empty string if not mentioned",
+  "source": "LinkedIn or Indeed or Rozee or Company Website or Unknown",
+  "key_skills": ["skill1", "skill2", "skill3"],
+  "experience_required": "e.g. 2-3 years or Senior or Entry-level or empty string"
+}}
+
+Rules:
+- Copy values directly from the text — do not rephrase or summarize
+- If a field genuinely cannot be found, use empty string — never guess
+- key_skills must be a list of specific technologies or skills mentioned (max 8)
+- For source: only use LinkedIn if the description mentions LinkedIn or description looks like a linkedin Post, otherwise use Unknown
+- title and company are the most important — look carefully before giving up
+"""
