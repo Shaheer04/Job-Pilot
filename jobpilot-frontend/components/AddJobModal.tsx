@@ -75,9 +75,10 @@ export const AddJobModal = () => {
       setSalaryRange("");
       showToast("Job added successfully");
       closeAddJobModal();
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        console.error("Validation Errors:", error.response.data);
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: any } };
+      if (err.response?.status === 400) {
+        console.error("Validation Errors:", err.response.data);
         showToast("Check input fields");
       } else {
         console.error("Failed to add job:", error);
