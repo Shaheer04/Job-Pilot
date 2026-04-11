@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { JobApplication, JobStage } from '@/types';
 
+const EMPTY_JOBS: JobApplication[] = [];
+
 export const useJobs = () => {
   const queryClient = useQueryClient();
 
@@ -41,7 +43,7 @@ export const useJobs = () => {
   });
 
   return {
-    jobs: jobsQuery.data || [],
+    jobs: jobsQuery.data || EMPTY_JOBS,
     isLoading: jobsQuery.isLoading,
     error: jobsQuery.error,
     updateStage: updateStageMutation.mutateAsync,

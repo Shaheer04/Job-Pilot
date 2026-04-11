@@ -3,12 +3,22 @@
 import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { 
+  LayoutDashboard, 
+  Kanban, 
+  Settings, 
+  HelpCircle, 
+  LogOut, 
+  Plus,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 
 export const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { openAddJobModal } = useUIStore();
+  const { openAddJobModal, isSidebarCollapsed, toggleSidebar } = useUIStore();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -17,65 +27,83 @@ export const Sidebar = () => {
   };
 
   const navItems = [
-    { name: "Overview", href: "/overview", icon: "dashboard" },
-    { name: "Kanban", href: "/", icon: "view_kanban" },
-    { name: "Analytics", href: "#", icon: "analytics" },
-    { name: "Settings", href: "#", icon: "settings" },
+    { name: "Analytics", href: "/overview", icon: LayoutDashboard },
+    { name: "Kanban", href: "/", icon: Kanban },
+    { name: "Settings", href: "#", icon: Settings },
   ];
 
   return (
-    <aside className="w-64 h-screen border-r border-zinc-800/50 bg-zinc-900 flex flex-col py-6 px-4 shrink-0">
-      <div className="mb-8 px-2">
+    <aside className={`${isSidebarCollapsed ? "w-20" : "w-64"} h-screen border-r border-zinc-800/50 bg-zinc-900 flex flex-col py-6 transition-all duration-300 ease-in-out shrink-0 relative`}>
+      {/* Toggle Button */}
+      <button 
+        onClick={toggleSidebar}
+        className="absolute -right-3 top-10 w-6 h-6 bg-zinc-800 border border-zinc-700 rounded-full flex items-center justify-center text-zinc-400 hover:text-white z-50 transition-colors shadow-lg"
+      >
+        {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </button>
+
+      <div className={`mb-8 px-6 transition-opacity duration-300 ${isSidebarCollapsed ? "opacity-0 invisible h-0 mb-0" : "opacity-100"}`}>
         <h1 className="text-xl font-bold tracking-tighter text-white">JobPilot</h1>
         <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono">
           Tactical Archive
         </p>
       </div>
-      <nav className="flex-1 space-y-1">
+
+      <nav className="flex-1 space-y-1 px-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
+          const Icon = item.icon;
           return (
             <Link
               key={item.name}
               href={item.href}
+              title={isSidebarCollapsed ? item.name : ""}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 ${
                 isActive
                   ? "text-white font-medium bg-zinc-800/50 border-r-2 border-indigo-500"
                   : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30"
-              }`}
+              } ${isSidebarCollapsed ? "justify-center" : ""}`}
             >
-              <span className={`material-symbols-outlined ${isActive ? "text-indigo-500" : ""}`} data-icon={item.icon}>
-                {item.icon}
-              </span>
-              <span className="font-semibold text-lg tracking-tight">{item.name}</span>
+              <Icon size={20} className={isActive ? "text-indigo-500" : ""} />
+              {!isSidebarCollapsed && (
+                <span className="font-semibold text-lg tracking-tight">{item.name}</span>
+              )}
             </Link>
           );
         })}
       </nav>
-      <button 
-        onClick={openAddJobModal}
-        className="mt-4 mb-8 w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-md text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
-      >
-        Add Job
-      </button>
-      <div className="pt-6 border-t border-zinc-800/50 space-y-1">
+
+      <div className="px-4">
+        <button 
+          onClick={openAddJobModal}
+          title={isSidebarCollapsed ? "Add Job" : ""}
+          className={`mt-4 mb-8 w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-md text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center justify-center gap-2 overflow-hidden`}
+        >
+          <Plus size={18} />
+          {!isSidebarCollapsed && <span>Add Job</span>}
+        </button>
+      </div>
+
+      <div className="pt-6 border-t border-zinc-800/50 space-y-1 px-4">
         <a
-          className="flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 transition-colors duration-200 rounded-lg"
+          title={isSidebarCollapsed ? "Support" : ""}
+          className={`flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 transition-colors duration-200 rounded-lg ${isSidebarCollapsed ? "justify-center" : ""}`}
           href="#"
         >
-          <span className="material-symbols-outlined text-indigo-500" data-icon="help">
-            help
-          </span>
-          <span className="font-semibold text-lg tracking-tight">Support</span>
+          <HelpCircle size={20} className="text-indigo-500" />
+          {!isSidebarCollapsed && (
+            <span className="font-semibold text-lg tracking-tight">Support</span>
+          )}
         </a>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 transition-colors duration-200 rounded-lg"
+          title={isSidebarCollapsed ? "Logout" : ""}
+          className={`w-full flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 transition-colors duration-200 rounded-lg ${isSidebarCollapsed ? "justify-center" : ""}`}
         >
-          <span className="material-symbols-outlined text-indigo-500" data-icon="logout">
-            logout
-          </span>
-          <span className="font-semibold text-lg tracking-tight">Logout</span>
+          <LogOut size={20} className="text-indigo-500" />
+          {!isSidebarCollapsed && (
+            <span className="font-semibold text-lg tracking-tight">Logout</span>
+          )}
         </button>
       </div>
     </aside>

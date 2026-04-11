@@ -1,4 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { 
+  X, 
+  ChevronDown, 
+  Sparkles, 
+  History, 
+  MapPin, 
+  Globe, 
+  Briefcase, 
+  Banknote, 
+  Send 
+} from "lucide-react";
 import { JobApplication, JobStage, JobDetail } from "@/types";
 import { useJobDetail } from "@/hooks/useJobDetail";
 import { useJobs } from "@/hooks/useJobs";
@@ -42,12 +53,40 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                 {job.title}
               </h2>
               <p className="text-xl text-on-surface-variant font-medium">{job.company}</p>
+              
+              {/* Job Metadata */}
+              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+                {job.location && (
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <MapPin size={14} />
+                    <span>{job.location}</span>
+                  </div>
+                )}
+                {job.source && (
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <Globe size={14} />
+                    <span>{job.source}</span>
+                  </div>
+                )}
+                {job.job_type && (
+                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+                    <Briefcase size={14} />
+                    <span>{job.job_type}</span>
+                  </div>
+                )}
+                {job.salary_range && (
+                  <div className="flex items-center gap-1.5 text-xs text-tertiary font-bold">
+                    <Banknote size={14} />
+                    <span>{job.salary_range}</span>
+                  </div>
+                )}
+              </div>
             </div>
             <button 
               onClick={onClose}
               className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-surface-bright transition-colors text-white"
             >
-              <span className="material-symbols-outlined">close</span>
+              <X size={20} />
             </button>
           </div>
           <div className="flex items-center space-x-4">
@@ -68,9 +107,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                   <option value="rejected">Rejected</option>
                   <option value="archived">Archived</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">
-                  expand_more
-                </span>
+                <ChevronDown size={16} className="absolute right-3 top-2.5 pointer-events-none text-on-surface-variant" />
               </div>
             </div>
             <div className="mono text-[10px] bg-tertiary/10 text-tertiary px-3 py-1.5 rounded-sm border border-tertiary/20 self-end font-mono uppercase">
@@ -84,12 +121,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
           {/* Smart Follow-up Coach */}
           <div className="bg-primary/5 rounded-xl border border-primary/20 p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4">
-              <span
-                className="material-symbols-outlined text-primary/40 text-4xl"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                psychology
-              </span>
+              <Sparkles size={40} className="text-primary/20" />
             </div>
             <div className="relative z-10">
               <div className="flex items-center space-x-2 mb-4">
@@ -102,7 +134,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                 {job.days_since_applied >= 7 ? "It's been a week since your last update. Time to check in!" : "You applied recently. Wait a few more days before following up."}
               </p>
               <button className="w-full py-3 bg-primary text-on-primary-container text-xs font-black uppercase tracking-widest rounded-md hover:bg-primary-container transition-all flex items-center justify-center space-x-2">
-                <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                <Sparkles size={14} />
                 <span>Get AI Advice</span>
               </button>
             </div>
@@ -111,7 +143,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
           {/* Timeline (Stage History) */}
           <section>
             <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-6 flex items-center">
-              <span className="material-symbols-outlined text-sm mr-2">history</span>
+              <History size={14} className="mr-2" />
               Stage History
             </h4>
             <div className="space-y-0 relative">
@@ -164,7 +196,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                   onClick={handleAddNote}
                   className="bg-primary text-on-primary-container p-1.5 rounded hover:bg-primary-container transition-colors"
                 >
-                  <span className="material-symbols-outlined text-sm">send</span>
+                  <Send size={14} />
                 </button>
               </div>
             </div>

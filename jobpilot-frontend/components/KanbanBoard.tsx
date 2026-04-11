@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   DndContext, 
   DragOverlay, 
@@ -11,6 +11,9 @@ import {
   DragOverEvent,
   DragEndEvent,
   defaultDropAnimationSideEffects,
+  UniqueIdentifier,
+  rectIntersection,
+  getFirstCollision,
 } from "@dnd-kit/core";
 import { 
   arrayMove, 
@@ -19,10 +22,22 @@ import {
   verticalListSortingStrategy,
   useSortable
 } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { 
+  MapPin, 
+  Globe, 
+  Briefcase, 
+  Banknote, 
+  Calendar, 
+  GripVertical, 
+  Ban, 
+  FileText, 
+  Sparkles,
+  MoreHorizontal
+} from "lucide-react";
 import { JobApplication, JobStage } from "@/types";
 import { useJobs } from "@/hooks/useJobs";
-import { useUIStore } from "@/store/uiStore";
 
 interface KanbanCardProps {
   card: JobApplication;
@@ -66,7 +81,6 @@ const KanbanCard = ({ card, onClick, isOverlay }: KanbanCardProps) => {
       {...attributes}
       {...listeners}
       onClick={(e) => {
-        // Prevent click when dragging starts
         if (transform) return;
         onClick();
       }}
@@ -75,20 +89,19 @@ const KanbanCard = ({ card, onClick, isOverlay }: KanbanCardProps) => {
         isOffer ? "border-tertiary/20 shadow-md hover:shadow-tertiary/10 bg-surface-container" :
         isRejected ? "border-outline-variant/10 cursor-not-allowed" :
         "border-outline-variant/15 shadow-sm hover:shadow-black/40 hover:bg-surface-container-high"
-      } p-4 rounded-md transition-all cursor-grab active:cursor-grabbing relative overflow-hidden ${isOverlay ? 'shadow-2xl ring-2 ring-primary/50 cursor-grabbing' : ''}`}
+      } p-4 rounded-md transition-all cursor-grab active:cursor-grabbing relative overflow-hidden flex flex-col gap-3 ${isOverlay ? 'shadow-2xl ring-2 ring-primary/50 cursor-grabbing' : ''}`}
     >
       {isOffer && (
         <div className="absolute top-0 right-0 p-1">
           <div className="h-12 w-12 bg-tertiary/5 rounded-full blur-xl"></div>
         </div>
       )}
-      <div className="flex items-center justify-between mb-2">
-        <span
-          className={`material-symbols-outlined ${isInterview ? "text-primary" : "text-zinc-600"} ${!isRejected ? "opacity-0 group-hover:opacity-100" : ""} transition-opacity text-sm`}
-          data-icon={isInterview ? "calendar_today" : isRejected ? "block" : "drag_indicator"}
-        >
-          {isInterview ? "calendar_today" : isRejected ? "block" : "drag_indicator"}
-        </span>
+      
+      {/* Header: Status Icon & Time */}
+      <div className="flex items-center justify-between">
+        <div className={`${isInterview ? "text-primary" : "text-zinc-600"} ${!isRejected ? "opacity-0 group-hover:opacity-100" : ""} transition-opacity`}>
+          {isInterview ? <Calendar size={14} /> : isRejected ? <Ban size={14} /> : <GripVertical size={14} />}
+        </div>
         <span
           className={`font-mono text-[10px] ${
             isInterview ? "text-secondary-fixed-dim bg-secondary-container/20" :
@@ -100,40 +113,73 @@ const KanbanCard = ({ card, onClick, isOverlay }: KanbanCardProps) => {
           {timeLabel}
         </span>
       </div>
-      <h4 className={`font-bold ${isRejected ? "text-zinc-400" : "text-on-surface"} text-sm mb-1`}>
-        {card.title}
-      </h4>
-      <div className="flex items-center gap-2 mb-4">
-        <div className={`w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-white overflow-hidden ${isRejected ? "opacity-50" : ""}`}>
-          <span className="text-[8px] uppercase">{card.company.slice(0, 2)}</span>
+
+      {/* Main Content: Title & Company */}
+      <div>
+        <h4 className={`font-bold ${isRejected ? "text-zinc-400" : "text-on-surface"} text-sm leading-snug mb-1.5 line-clamp-2`}>
+          {card.title}
+        </h4>
+        <div className="flex items-center gap-2">
+          <div className={`w-5 h-5 rounded bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-white overflow-hidden shrink-0 ${isRejected ? "opacity-50" : ""}`}>
+            <span className="text-[8px] uppercase">{card.company.slice(0, 2)}</span>
+          </div>
+          <span className={`text-xs ${isRejected ? "text-zinc-500" : "text-on-surface-variant"} font-medium truncate`}>
+            {card.company}
+          </span>
         </div>
-        <span className={`text-xs ${isRejected ? "text-zinc-500" : "text-on-surface-variant"} font-medium`}>
-          {card.company}
-        </span>
       </div>
+
+      {/* Details: Location, Source, Job Type */}
+      {!isRejected && (card.location || card.source || card.job_type) && (
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5">
+          {card.location && (
+            <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+              <MapPin size={12} className="shrink-0" />
+              <span className="truncate max-w-[100px]">{card.location}</span>
+            </div>
+          )}
+          {card.source && (
+            <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+              <Globe size={12} className="shrink-0" />
+              <span className="truncate max-w-[80px]">{card.source}</span>
+            </div>
+          )}
+          {card.job_type && (
+            <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+              <Briefcase size={12} className="shrink-0" />
+              <span className="truncate max-w-[80px]">{card.job_type}</span>
+            </div>
+          )}
+        </div>
+      )}
       
+      {/* Footer: Package & Actions */}
       {!isRejected ? (
-        <div className="flex items-center justify-between border-t border-outline-variant/10 pt-3">
-          <div className="flex gap-2">
-            <span className="material-symbols-outlined text-zinc-500 text-sm hover:text-primary transition-colors" data-icon="sticky_note_2">
-              sticky_note_2
-            </span>
-            <span className={`material-symbols-outlined text-sm ${isInterview || isOffer ? "text-secondary" : "text-zinc-500"} hover:text-secondary transition-colors`} data-icon={isOffer ? "auto_awesome" : "psychology"}>
-              {isOffer ? "auto_awesome" : "psychology"}
-            </span>
+        <div className="flex items-center justify-between border-t border-outline-variant/10 pt-3 mt-auto">
+          <div className="flex gap-2 text-zinc-500">
+            <FileText size={14} className="hover:text-primary transition-colors cursor-pointer" />
+            <Sparkles size={14} className={`${isInterview || isOffer ? "text-secondary" : ""} hover:text-secondary transition-colors cursor-pointer`} />
           </div>
           {card.salary_range && (
-            <span className="font-mono text-xs text-tertiary font-bold">{card.salary_range}</span>
+            <div className="flex items-center gap-1 bg-tertiary/5 px-2 py-0.5 rounded border border-tertiary/10">
+              <Banknote size={12} className="text-tertiary font-bold" />
+              <span className="font-mono text-[10px] text-tertiary font-bold tracking-tight">{card.salary_range}</span>
+            </div>
           )}
         </div>
       ) : (
-        <div className="border-t border-outline-variant/5 pt-3">
+        <div className="border-t border-outline-variant/5 pt-3 mt-auto">
           <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-tighter">Archive ref: #{card.id}</span>
         </div>
       )}
     </div>
   );
 };
+
+
+
+
+
 
 const KanbanColumn = ({
   id,
@@ -150,6 +196,14 @@ const KanbanColumn = ({
   grayscale?: boolean;
   onCardClick: (job: JobApplication) => void;
 }) => {
+  const { setNodeRef } = useDroppable({
+    id,
+    data: {
+      type: 'column',
+      stage: id,
+    },
+  });
+
   return (
     <div className={`flex flex-col w-80 shrink-0 ${grayscale ? "grayscale opacity-60" : ""}`}>
       <div className="flex items-center justify-between mb-4 px-2">
@@ -162,14 +216,17 @@ const KanbanColumn = ({
             {cards.length.toString().padStart(2, '0')}
           </span>
         </div>
-        <button className="material-symbols-outlined text-zinc-500 hover:text-white text-lg" data-icon="more_horiz">
-          more_horiz
+        <button className="text-zinc-500 hover:text-white transition-colors">
+          <MoreHorizontal size={18} />
         </button>
       </div>
       
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-        <SortableContext id={id} items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3 min-h-[200px]">
+      <div 
+        ref={setNodeRef}
+        className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-[200px]"
+      >
+        <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-3 pb-20">
             {cards.map((card) => (
               <KanbanCard key={card.id} card={card} onClick={() => onCardClick(card)} />
             ))}
@@ -189,11 +246,26 @@ export const KanbanBoard = ({
 }) => {
   const { updateStage } = useJobs();
   const [activeCard, setActiveCard] = useState<JobApplication | null>(null);
+  const [localJobs, setLocalJobs] = useState<JobApplication[]>(initialJobs);
+
+  // Keep local jobs in sync with prop updates (except during active dragging)
+  useEffect(() => {
+    if (!activeCard) {
+      // Deep compare or simple length/id check to avoid redundant updates
+      const isSame = 
+        localJobs.length === initialJobs.length && 
+        localJobs.every((job, i) => job.id === initialJobs[i]?.id && job.current_stage === initialJobs[i]?.current_stage);
+      
+      if (!isSame) {
+        setLocalJobs(initialJobs);
+      }
+    }
+  }, [initialJobs, activeCard, localJobs.length]); // Added localJobs.length for safety
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -216,42 +288,72 @@ export const KanbanBoard = ({
     if (card) setActiveCard(card);
   };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
+  const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    setActiveCard(null);
-
     if (!over) return;
 
-    const jobId = active.id as number;
-    const overId = over.id as string;
+    const activeId = active.id;
+    const overId = over.id;
 
-    // Check if we dropped onto a column or an item in a column
-    let newStage: JobStage | undefined;
-    
-    // Column IDs are the stages
-    if (columns.some(col => col.stage === overId)) {
-      newStage = overId as JobStage;
-    } else {
-      // Find the stage of the card we dropped over
-      const overCard = initialJobs.find(j => j.id === over.id);
-      if (overCard) {
-        newStage = overCard.current_stage;
-      }
+    if (activeId === overId) return;
+
+    // Find active and over containers (stages)
+    const activeData = active.data.current;
+    const overData = over.data.current;
+
+    const activeStage = activeData?.card?.current_stage;
+    let overStage: JobStage | undefined;
+
+    if (overData?.type === 'column') {
+      overStage = overData.stage;
+    } else if (overData?.type === 'card') {
+      overStage = overData.card.current_stage;
     }
 
-    if (newStage) {
-      const activeCard = initialJobs.find(j => j.id === jobId);
-      if (activeCard && activeCard.current_stage !== newStage) {
-        await updateStage({ jobId, newStage });
-      }
+    if (!overStage || activeStage === overStage) return;
+
+    // Moving between containers
+    setLocalJobs((prev) => {
+      return prev.map((job) => {
+        if (job.id === activeId) {
+          return { ...job, current_stage: overStage! };
+        }
+        return job;
+      });
+    });
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    const activeId = active.id as number;
+    
+    // Reset active card
+    setActiveCard(null);
+
+    if (!over) {
+      // If dropped nowhere, localJobs will reset from initialJobs via useEffect
+      return;
+    }
+
+    // Determine the final stage from localJobs
+    const draggedJob = localJobs.find(j => j.id === activeId);
+    const originalJob = initialJobs.find(j => j.id === activeId);
+
+    if (draggedJob && originalJob && draggedJob.current_stage !== originalJob.current_stage) {
+      // Sync with backend
+      await updateStage({ 
+        jobId: activeId, 
+        newStage: draggedJob.current_stage 
+      });
     }
   };
 
   return (
     <DndContext 
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={rectIntersection} // Rect intersection is more reliable for grid/column layouts
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div className="flex-1 overflow-x-auto p-6 scroll-smooth">
@@ -263,7 +365,7 @@ export const KanbanBoard = ({
               title={column.title}
               dotColor={column.dotColor}
               grayscale={column.grayscale}
-              cards={initialJobs.filter(job => job.current_stage === column.stage)} 
+              cards={localJobs.filter(job => job.current_stage === column.stage)} 
               onCardClick={onCardClick} 
             />
           ))}

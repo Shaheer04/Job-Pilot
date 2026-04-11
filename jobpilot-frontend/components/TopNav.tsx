@@ -1,16 +1,12 @@
 import React from "react";
+import { Search, Bell } from "lucide-react";
 
 export const TopNav = () => {
   return (
     <header className="flex justify-between items-center w-full px-6 py-3 h-14 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/40 z-10">
       <div className="flex items-center gap-8">
         <div className="relative flex items-center">
-          <span
-            className="material-symbols-outlined absolute left-3 text-zinc-500 text-sm"
-            data-icon="search"
-          >
-            search
-          </span>
+          <Search className="absolute left-3 text-zinc-500" size={16} />
           <input
             className="bg-transparent border-none focus:ring-0 text-sm text-zinc-300 w-64 pl-10 outline-none"
             placeholder="Quick search archives..."
@@ -38,10 +34,9 @@ export const TopNav = () => {
         </button>
         <div className="flex items-center gap-2 border-l border-zinc-800 pl-4">
           <button
-            className="material-symbols-outlined text-zinc-500 hover:text-white transition-all p-1"
-            data-icon="notifications"
+            className="text-zinc-500 hover:text-white transition-all p-1"
           >
-            notifications
+            <Bell size={18} />
           </button>
           <div className="h-8 w-8 rounded-full bg-indigo-500 overflow-hidden ring-2 ring-zinc-800/50">
             <img

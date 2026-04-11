@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { TopNav } from "@/components/TopNav";
 import { AddJobModal } from "@/components/AddJobModal";
 import { useHealthScore } from "@/hooks/useHealthScore";
+import { AlertCircle, Sparkles } from "lucide-react";
 
 export default function OverviewPage() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function OverviewPage() {
     const isAuthError = (error as { response?: { status?: number } }).response?.status === 401;
     return (
       <div className="flex items-center justify-center h-screen bg-surface flex-col gap-4">
-        <span className="material-symbols-outlined text-error text-5xl">report</span>
+        <AlertCircle className="text-error" size={48} />
         <div className="text-center">
           <h2 className="text-white font-bold">
             {isAuthError ? "Session Expired" : "Analysis Error"}
@@ -66,7 +67,7 @@ export default function OverviewPage() {
           {/* Header Section */}
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-outline-variant/10 pb-8">
             <div>
-              <h2 className="text-3xl font-semibold tracking-tight text-white mb-1">System Overview</h2>
+              <h2 className="text-3xl font-semibold tracking-tight text-white mb-1">System Analytics</h2>
               <p className="text-on-surface-variant font-medium">Welcome back, operative. Here is your weekly status.</p>
             </div>
             <div className="font-mono text-xs text-indigo-400 bg-indigo-400/5 border border-indigo-400/10 px-3 py-1.5 rounded-sm">
@@ -114,10 +115,10 @@ export default function OverviewPage() {
               {/* Gemini Advice Card */}
               <div className="col-span-full bg-gradient-to-br from-surface-container-high to-surface-container p-6 rounded-lg border border-primary/20 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <span className="material-symbols-outlined text-8xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                  <Sparkles size={96} />
                 </div>
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                  <Sparkles className="text-primary" size={20} />
                   <h3 className="text-lg font-semibold tracking-tight text-white">AI Strategy for this Week</h3>
                 </div>
                 {isLoading ? (
