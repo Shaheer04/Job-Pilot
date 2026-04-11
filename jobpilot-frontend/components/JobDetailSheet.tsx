@@ -8,9 +8,12 @@ import {
   Globe, 
   Briefcase, 
   Banknote, 
-  Send 
+  Send,
+  Calendar,
+  FileText,
+  AlertCircle
 } from "lucide-react";
-import { JobApplication, JobStage, JobDetail } from "@/types";
+import { JobApplication, JobStage } from "@/types";
 import { useJobDetail } from "@/hooks/useJobDetail";
 import { useJobs } from "@/hooks/useJobs";
 
@@ -25,7 +28,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
   const { updateStage } = useJobs();
   const [noteContent, setNoteContent] = useState("");
 
-  const job = fullJob || (initialJob as JobDetail | null);
+  const job = fullJob || initialJob;
 
   if (!isOpen || !job) return null;
 
@@ -40,126 +43,206 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
     setNoteContent("");
   };
 
+  // Calculate some "Important Updates" or Status
+  const isStale = (new Date().getTime() - new Date(job.updated_at).getTime()) > 7 * 24 * 60 * 60 * 1000;
+  const daysSinceApplied = Math.floor((new Date().getTime() - new Date(job.applied_date).getTime()) / (1000 * 60 * 60 * 24));
+
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
       <div className="absolute inset-0" onClick={onClose}></div>
       
       <section className="relative w-full max-w-xl bg-surface h-full shadow-2xl flex flex-col border-l border-outline-variant/30 transform transition-transform duration-300 ease-out">
         {/* Sheet Header */}
-        <div className="p-8 border-b border-outline-variant/20">
+        <div className="p-8 border-b border-outline-variant/20 bg-surface-container-low/50">
           <div className="flex justify-between items-start mb-6">
-            <div className="space-y-1">
+            <div className="space-y-1 flex-1 pr-4">
               <h2 className="text-3xl font-extrabold tracking-tight text-white leading-tight">
                 {job.title}
               </h2>
-              <p className="text-xl text-on-surface-variant font-medium">{job.company}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xl text-primary font-medium">{job.company}</p>
+                {isStale && (
+                  <span className="flex items-center gap-1 text-[10px] bg-error-container/20 text-error px-2 py-0.5 rounded border border-error/20 font-bold uppercase tracking-wider">
+                    <AlertCircle size={10} />
+                    Stale
+                  </span>
+                )}
+              </div>
               
-              {/* Job Metadata */}
-              <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
+              {/* Job Metadata Grid */}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-4">
                 {job.location && (
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <MapPin size={14} />
+                  <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                    <MapPin size={14} className="text-outline" />
                     <span>{job.location}</span>
                   </div>
                 )}
-                {job.source && (
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <Globe size={14} />
-                    <span>{job.source}</span>
-                  </div>
-                )}
                 {job.job_type && (
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-                    <Briefcase size={14} />
+                  <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                    <Briefcase size={14} className="text-outline" />
                     <span>{job.job_type}</span>
                   </div>
                 )}
+                <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                  <Calendar size={14} className="text-outline" />
+                  <span>Applied {daysSinceApplied} days ago</span>
+                </div>
                 {job.salary_range && (
-                  <div className="flex items-center gap-1.5 text-xs text-tertiary font-bold">
+                  <div className="flex items-center gap-2 text-xs text-tertiary font-bold">
                     <Banknote size={14} />
                     <span>{job.salary_range}</span>
+                  </div>
+                )}
+                {job.source && (
+                  <div className="flex items-center gap-2 text-xs text-on-surface-variant col-span-2">
+                    <Globe size={14} className="text-outline" />
+                    <span>Source: <span className="text-white font-medium">{job.source}</span></span>
                   </div>
                 )}
               </div>
             </div>
             <button 
               onClick={onClose}
-              className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-surface-bright transition-colors text-white"
+              className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-surface-bright transition-colors text-white flex-shrink-0"
             >
               <X size={20} />
             </button>
           </div>
-          <div className="flex items-center space-x-4">
+
+          <div className="flex items-center space-x-4 bg-surface-container p-3 rounded-lg border border-outline-variant/10">
             <div className="flex-1">
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-1">
-                Current Stage
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-outline mb-1.5 ml-1">
+                Move to Stage
               </label>
               <div className="relative">
                 <select 
                   value={job.current_stage}
                   onChange={handleStageChange}
-                  className="w-full bg-surface-container border-none text-on-surface text-sm font-semibold rounded-md py-2.5 px-4 focus:ring-1 focus:ring-primary appearance-none cursor-pointer outline-none"
+                  className="w-full bg-surface-container-low border border-outline-variant/20 text-on-surface text-sm font-semibold rounded-md py-2 px-3 focus:ring-1 focus:ring-primary appearance-none cursor-pointer outline-none hover:border-outline-variant transition-colors"
                 >
                   <option value="applied">Applied</option>
                   <option value="followed_up">Followed Up</option>
-                  <option value="interview">Interview</option>
-                  <option value="offer">Offer</option>
+                  <option value="interview">Interview Scheduled</option>
+                  <option value="offer">Offer Received</option>
                   <option value="rejected">Rejected</option>
                   <option value="archived">Archived</option>
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-2.5 pointer-events-none text-on-surface-variant" />
+                <ChevronDown size={14} className="absolute right-3 top-2.5 pointer-events-none text-outline" />
               </div>
             </div>
-            <div className="mono text-[10px] bg-tertiary/10 text-tertiary px-3 py-1.5 rounded-sm border border-tertiary/20 self-end font-mono uppercase">
-              {job.current_stage.replace('_', ' ')}
+            <div className="flex flex-col items-end justify-center px-4 border-l border-outline-variant/20">
+               <span className="text-[10px] font-bold text-outline uppercase tracking-widest mb-1">Status</span>
+               <span className="text-xs font-black text-primary uppercase tracking-tighter">
+                {job.current_stage.replace('_', ' ')}
+               </span>
             </div>
           </div>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar p-8 space-y-10">
-          {/* Smart Follow-up Coach */}
-          <div className="bg-primary/5 rounded-xl border border-primary/20 p-6 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4">
-              <Sparkles size={40} className="text-primary/20" />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center space-x-2 mb-4">
-                <span className="text-[10px] font-black uppercase tracking-tighter bg-primary text-on-primary-container px-2 py-0.5 rounded">
-                  Coach AI
-                </span>
-                <h4 className="text-sm font-bold text-white">Follow-up Recommendation</h4>
+        <div className="flex-1 overflow-y-auto no-scrollbar p-8 space-y-12">
+          
+          {/* Important Updates / AI Recommendations */}
+          <section>
+             <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-4 flex items-center">
+              <Sparkles size={14} className="mr-2 text-primary" />
+              Insights & Next Steps
+            </h4>
+            <div className="bg-primary/5 rounded-xl border border-primary/10 p-5 relative overflow-hidden">
+              <div className="absolute top-[-10px] right-[-10px] opacity-10">
+                <Sparkles size={80} className="text-primary" />
               </div>
-              <p className="text-xs text-on-surface-variant mb-4">
-                {job.days_since_applied >= 7 ? "It's been a week since your last update. Time to check in!" : "You applied recently. Wait a few more days before following up."}
-              </p>
-              <button className="w-full py-3 bg-primary text-on-primary-container text-xs font-black uppercase tracking-widest rounded-md hover:bg-primary-container transition-all flex items-center justify-center space-x-2">
-                <Sparkles size={14} />
-                <span>Get AI Advice</span>
-              </button>
+              <div className="relative z-10">
+                <div className="flex items-start gap-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Sparkles size={18} className="text-primary" />
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-bold text-white mb-1">Follow-up Strategy</h5>
+                    <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
+                      {isStale 
+                        ? "This application has gone stale. We recommend sending a polite follow-up to the hiring manager to express your continued interest."
+                        : "Your application is still fresh. Focus on preparing for potential technical interviews or researching the company culture."}
+                    </p>
+                    <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-container transition-colors group">
+                      Open Follow-up Coach
+                      <span className="group-hover:translate-x-1 transition-transform">→</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
+
+          {/* Job Description Section */}
+          <section>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-4 flex items-center">
+              <FileText size={14} className="mr-2" />
+              Job Description
+            </h4>
+            <div className="bg-surface-container-low/30 rounded-lg border border-outline-variant/10 p-6 max-h-[400px] overflow-y-auto custom-scrollbar">
+              {job.description ? (
+                <div className="text-sm text-on-surface-variant leading-relaxed font-body space-y-4">
+                  {job.description.split('\n').map((line, i) => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) return <div key={i} className="h-2" />;
+                    
+                    // Detect Bullet Points
+                    if (trimmedLine.startsWith('•') || trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || /^\d+\./.test(trimmedLine)) {
+                      return (
+                        <div key={i} className="flex gap-3 pl-2 group">
+                          <span className="text-primary font-bold mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors"></span>
+                          <span className="flex-1 text-on-surface/90">{trimmedLine.replace(/^[•\-\*\d\.]+\s*/, '')}</span>
+                        </div>
+                      );
+                    }
+
+                    // Detect potential headers (all caps or ending with colon)
+                    if ((trimmedLine.length < 50 && trimmedLine.endsWith(':')) || (trimmedLine.length < 40 && trimmedLine === trimmedLine.toUpperCase() && trimmedLine.length > 3)) {
+                      return (
+                        <h5 key={i} className="text-xs font-black uppercase tracking-wider text-white mt-6 mb-2 border-l-2 border-primary/30 pl-3">
+                          {trimmedLine}
+                        </h5>
+                      );
+                    }
+
+                    return <p key={i} className="text-on-surface/80 leading-relaxed">{trimmedLine}</p>;
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-outline/50 italic text-sm text-center">
+                  <FileText size={32} className="mb-3 opacity-20" />
+                  <p>No description provided for this job.</p>
+                </div>
+              )}
+            </div>
+          </section>
 
           {/* Timeline (Stage History) */}
           <section>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-6 flex items-center">
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-6 flex items-center">
               <History size={14} className="mr-2" />
-              Stage History
+              Application Timeline
             </h4>
             <div className="space-y-0 relative">
-              <div className="absolute left-2 top-2 bottom-2 w-px bg-outline-variant/30"></div>
+              <div className="absolute left-2.5 top-2 bottom-2 w-[1px] bg-gradient-to-b from-primary/50 to-transparent"></div>
               {job.stage_history?.map((history, index) => (
-                <div key={history.id} className="relative pl-8 pb-8 group">
-                  <div className={`absolute left-0 top-1.5 w-4 h-4 rounded-full bg-surface border-2 ${index === 0 ? "border-primary" : "border-outline-variant/50"} z-10`}></div>
+                <div key={history.id} className="relative pl-10 pb-8 last:pb-0">
+                  <div className={`absolute left-0 top-1 w-5 h-5 rounded-full bg-surface border-2 ${index === 0 ? "border-primary" : "border-outline-variant/30"} z-10 flex items-center justify-center shadow-[0_0_10px_rgba(192,193,255,0.1)]`}>
+                    {index === 0 && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>}
+                  </div>
                   <div className="flex flex-col">
                     <div className="flex justify-between items-start">
-                      <span className={`text-sm font-bold ${index === 0 ? "text-white" : "text-on-surface-variant"} capitalize`}>
+                      <span className={`text-sm font-bold ${index === 0 ? "text-white" : "text-on-surface-variant"} capitalize tracking-tight`}>
                         {history.stage.replace('_', ' ')}
                       </span>
-                      <span className="font-mono text-[10px] text-on-surface-variant">
-                        {new Date(history.moved_at).toLocaleString()}
+                      <span className="font-mono text-[10px] text-outline opacity-60">
+                        {new Date(history.moved_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
+                    {index === 0 && (
+                      <span className="text-[10px] text-primary font-medium mt-0.5">Current Status</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -169,53 +252,62 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
           {/* Notes Area */}
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-                Interview Notes
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline">
+                Research & Interview Notes
               </h4>
-              <span className="font-mono text-[10px] text-primary">Saved in cloud</span>
             </div>
-            <div className="space-y-4 mb-4">
-              {job.notes?.map(note => (
-                <div key={note.id} className="bg-surface-container-low p-3 rounded border border-outline-variant/10 text-sm">
-                  <p className="text-on-surface">{note.content}</p>
-                  <span className="text-[10px] text-outline mt-1 block">
-                    {new Date(note.created_at).toLocaleString()}
-                  </span>
-                </div>
-              ))}
+            
+            <div className="space-y-3 mb-4">
+              {job.notes?.length === 0 ? (
+                <p className="text-[10px] text-outline italic text-center py-4 bg-surface-container-low/20 rounded border border-dashed border-outline-variant/20">
+                  No notes yet. Add thoughts about company culture or salary expectations.
+                </p>
+              ) : (
+                job.notes?.map(note => (
+                  <div key={note.id} className="bg-surface-container-low/50 p-4 rounded-lg border border-outline-variant/10 text-sm shadow-sm">
+                    <p className="text-on-surface leading-relaxed">{note.content}</p>
+                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-outline-variant/5">
+                      <span className="text-[9px] font-mono text-outline uppercase tracking-wider">
+                        {new Date(note.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-            <div className="relative group">
+
+            <div className="relative mt-6 group">
               <textarea
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                className="w-full min-h-[120px] bg-surface-container-low border-b border-outline-variant focus:border-primary transition-all p-4 text-sm text-on-surface placeholder:text-outline/50 resize-none outline-none"
-                placeholder="Jot down salary discussions, interviewer names..."
+                className="w-full min-h-[100px] bg-surface-container border border-outline-variant/20 rounded-lg focus:border-primary/50 transition-all p-4 text-sm text-on-surface placeholder:text-outline/40 resize-none outline-none shadow-inner"
+                placeholder="Type a new note..."
               ></textarea>
-              <div className="absolute bottom-4 right-4 flex space-x-2">
-                <button 
-                  onClick={handleAddNote}
-                  className="bg-primary text-on-primary-container p-1.5 rounded hover:bg-primary-container transition-colors"
-                >
-                  <Send size={14} />
-                </button>
-              </div>
+              <button 
+                onClick={handleAddNote}
+                disabled={!noteContent.trim()}
+                className="absolute bottom-3 right-3 bg-primary text-on-primary-container px-3 py-1.5 rounded-md hover:bg-primary-container disabled:opacity-30 disabled:hover:bg-primary transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+              >
+                <Send size={12} />
+                Save
+              </button>
             </div>
           </section>
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 bg-surface-container-low border-t border-outline-variant/20 flex space-x-3">
+        <div className="p-6 bg-surface-container border-t border-outline-variant/20 flex space-x-3">
           <button 
             onClick={() => updateStage({ jobId: job.id, newStage: 'archived' })}
-            className="flex-1 py-3 bg-surface-container-highest border border-outline-variant/20 text-white text-xs font-bold uppercase tracking-widest rounded-md hover:bg-surface-bright transition-all"
+            className="flex-1 py-3 bg-surface-container-highest border border-outline-variant/20 text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-md hover:bg-surface-bright transition-all"
           >
-            Archive Job
+            Archive
           </button>
           <button 
             onClick={onClose}
-            className="flex-[2] py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary-container text-xs font-black uppercase tracking-widest rounded-md shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
+            className="flex-[2] py-3 bg-primary text-on-primary-container text-[10px] font-black uppercase tracking-[0.2em] rounded-md shadow-[0_4px_20px_rgba(192,193,255,0.15)] hover:brightness-105 transition-all"
           >
-            Done
+            Close Panel
           </button>
         </div>
       </section>

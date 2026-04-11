@@ -33,9 +33,9 @@ class JobListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         # SECURITY: users only ever see their own jobs
-        # order_by('-created_at') means newest jobs appear first
+        # order_by('created_at') means oldest jobs appear first (requested by user)
         return JobApplication.objects.filter(user=self.request.user).order_by(
-            "-created_at"
+            "created_at"
         )
 
     def perform_create(self, seralizer):

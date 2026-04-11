@@ -11,7 +11,9 @@ import {
   LogOut, 
   Plus,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Download,
+  Zap
 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
 
@@ -77,11 +79,28 @@ export const Sidebar = () => {
         <button 
           onClick={openAddJobModal}
           title={isSidebarCollapsed ? "Add Job" : ""}
-          className={`mt-4 mb-8 w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-md text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center justify-center gap-2 overflow-hidden`}
+          className={`mt-4 mb-4 w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-md text-sm transition-all shadow-lg shadow-indigo-500/20 active:scale-95 flex items-center justify-center gap-2 overflow-hidden`}
         >
           <Plus size={18} />
           {!isSidebarCollapsed && <span>Add Job</span>}
         </button>
+
+        {/* Extension Promo Card */}
+        {!isSidebarCollapsed && (
+          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-4 mt-2 mb-6 group hover:bg-indigo-500/10 transition-all cursor-pointer">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap size={14} className="text-indigo-400 fill-indigo-400/20" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-200">Browser Clipper</span>
+            </div>
+            <p className="text-[10px] text-zinc-400 leading-relaxed mb-3">
+              Clip jobs from LinkedIn in 1-click. No more copy-paste.
+            </p>
+            <button className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-indigo-400 text-[10px] font-black uppercase tracking-widest rounded border border-indigo-500/20 flex items-center justify-center gap-2 transition-all">
+              <Download size={12} />
+              Install Extension
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="pt-6 border-t border-zinc-800/50 space-y-1 px-4">

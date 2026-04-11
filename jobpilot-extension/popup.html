@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobPilot Clipper</title>
+  <style>
+    :root {
+      --bg: #131315;
+      --surface: #201f22;
+      --primary: #c0c1ff;
+      --on-surface: #e5e1e4;
+      --outline: #464554;
+      --error: #ffb4ab;
+    }
+
+    body {
+      width: 350px;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--on-surface);
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      margin-bottom: 16px;
+      color: var(--primary);
+    }
+
+    .card {
+      background-color: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+      color: var(--primary);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 8px;
+      background-color: var(--bg);
+      border: 1px solid var(--outline);
+      color: var(--on-surface);
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 0.875rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--primary);
+      color: #0d0096;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hidden { display: none; }
+    
+    .loading-spinner {
+      text-align: center;
+      padding: 20px;
+    }
+
+    #error-message {
+      color: var(--error);
+      font-size: 0.75rem;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--outline);
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>JobPilot Clipper</h1>
+
+  <!-- Login View -->
+  <div id="login-view" class="hidden">
+    <div id="login-error" class="hidden"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••">
+    </div>
+    <button id="login-btn">Log In</button>
+  </div>
+
+  <!-- Main View -->
+  <div id="main-view">
+    <div id="loading" class="loading-spinner">
+      Scanning page...
+    </div>
+
+    <div id="job-details" class="hidden">
+      <div id="status-message" class="hidden"></div>
+      
+      <div class="form-group">
+        <label>Job Title</label>
+        <input type="text" id="job-title">
+      </div>
+      
+      <div class="form-group">
+        <label>Company</label>
+        <input type="text" id="job-company">
+      </div>
+
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" id="job-location">
+      </div>
+
+      <div class="form-group">
+        <label>Type</label>
+        <select id="job-type">
+          <option value="Full-time">Full-time</option>
+          <option value="Part-time">Part-time</option>
+          <option value="Contract">Contract</option>
+          <option value="Freelance">Freelance</option>
+          <option value="Internship">Internship</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Salary Range</label>
+        <input type="text" id="job-salary" placeholder="e.g. $80k - $120k">
+      </div>
+
+      <button id="save-btn">Add to Tracker</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
