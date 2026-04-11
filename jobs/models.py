@@ -20,7 +20,7 @@ class JobApplication (models.Model):
     user = models.ForeignKey(User, on_delete = models.CASCADE)
     title = models.CharField(max_length=225)
     company = models.CharField(max_length=225)
-    location = models.CharField(max_length=225)
+    location = models.CharField(max_length=225, blank=True)
     description = models.TextField(blank=True)
     source = models.CharField(max_length=100, blank=True)
     job_type = models.CharField(max_length=100, blank=True)
@@ -29,6 +29,10 @@ class JobApplication (models.Model):
     ghost_score = models.CharField(max_length=10, blank=True, null=True)
     ghost_reasoning = models.TextField(blank=True, null=True)
     applied_date = models.DateField(default=date.today)
+    
+    # New AI-extracted fields
+    key_skills = models.JSONField(default=list, blank=True)
+    experience_required = models.CharField(max_length=255, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

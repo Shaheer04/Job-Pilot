@@ -34,6 +34,8 @@ class JobApplicationSerializer(serializers.ModelSerializer):
             "source",
             "job_type",
             "salary_range",
+            "key_skills",
+            "experience_required",
             "current_stage",
             "ghost_score",
             "ghost_reasoning",
@@ -72,6 +74,8 @@ class JobApplicationCreateSerializer(serializers.ModelSerializer):
             'source',
             'job_type',
             'salary_range',
+            'key_skills',
+            'experience_required',
             'applied_date'
         ]
         read_only_fields = ['id']
@@ -82,5 +86,3 @@ class JobApplicationCreateSerializer(serializers.ModelSerializer):
                 "Applied date can't be in future."
             )
         return value
-
-        

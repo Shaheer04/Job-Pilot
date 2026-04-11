@@ -41,8 +41,8 @@ export default function Home() {
           </h2>
           <p className="text-on-surface-variant text-sm mt-1">
             {isAuthError 
-              ? "Your tactical session has ended. Redirecting to login..." 
-              : "Unable to reach the archive. Please check your network connection."}
+              ? "Your session has ended. Redirecting to login..." 
+              : "Unable to connect to your dashboard. Please check your network connection."}
           </p>
         </div>
         {!isAuthError && (

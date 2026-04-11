@@ -1,11 +1,12 @@
 import json
 import google.generativeai as genai
 from decouple import config
+from django.conf import settings
 from ai_services.prompts import build_extraction_prompt
 import re
 
 genai.configure(api_key=config("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.5-flash-lite")
+model = genai.GenerativeModel(settings.AI_MODEL_NAME)
 
 # def extract_job_details(description):
 #     try:

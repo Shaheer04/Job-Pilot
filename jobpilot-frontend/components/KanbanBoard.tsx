@@ -71,10 +71,10 @@ const KanbanCard = ({ card, onClick, isOverlay }: KanbanCardProps) => {
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
            <div className={`w-6 h-6 rounded-lg bg-surface flex items-center justify-center text-[10px] font-black text-white border border-outline-variant/20 shadow-inner`}>
-            {card.company.slice(0, 1).toUpperCase()}
+            {(card.company || "?").slice(0, 1).toUpperCase()}
           </div>
           <span className={`text-xs font-bold ${isRejected ? "text-zinc-500" : "text-white"} tracking-tight truncate max-w-[140px]`}>
-            {card.company}
+            {card.company || "Unknown Company"}
           </span>
         </div>
         <span className={`font-mono text-[9px] font-bold tracking-widest uppercase ${
@@ -99,6 +99,12 @@ const KanbanCard = ({ card, onClick, isOverlay }: KanbanCardProps) => {
             <div className="flex items-center gap-2 text-[10px] text-on-surface-variant font-medium">
               <MapPin size={12} className="text-outline" />
               <span>{card.location}</span>
+            </div>
+          )}
+          {card.experience_required && (
+            <div className="flex items-center gap-2 text-[10px] text-secondary font-bold uppercase tracking-wider">
+              <Sparkles size={12} className="text-secondary/70" />
+              <span>{card.experience_required}</span>
             </div>
           )}
           <div className="flex items-center gap-2 text-[10px] text-on-surface-variant font-medium">
@@ -199,8 +205,8 @@ const KanbanColumn = ({
             ))}
         </div>
 
-        {/* Extension Promo Ghost Card in Applied Column */}
-        {id === 'applied' && (
+        {/* Extension Promo Ghost Card in Applied Column (Only if empty) */}
+        {id === 'applied' && cards.length === 0 && (
           <div className="mt-2 border-2 border-dashed border-indigo-500/10 bg-indigo-500/[0.03] rounded-xl p-8 flex flex-col items-center justify-center text-center group hover:bg-indigo-500/[0.06] hover:border-indigo-500/20 transition-all cursor-pointer">
             <div className="p-4 bg-indigo-500/10 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
               <Zap size={24} className="text-indigo-400 fill-indigo-400/20" />

@@ -45,9 +45,16 @@ export const Sidebar = () => {
       </button>
 
       <div className={`mb-8 px-6 transition-opacity duration-300 ${isSidebarCollapsed ? "opacity-0 invisible h-0 mb-0" : "opacity-100"}`}>
-        <h1 className="text-xl font-bold tracking-tighter text-white">JobPilot</h1>
-        <p className="text-[10px] uppercase tracking-widest text-zinc-500 font-mono">
-          Tactical Archive
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+              <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+            </svg>
+          </div>
+          <h1 className="text-xl font-black tracking-tight text-white">JobPilot</h1>
+        </div>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-indigo-400 font-black ml-1">
+          Smart Job Tracker
         </p>
       </div>
 

@@ -1,12 +1,13 @@
 import json
 import google.generativeai as genai
 from decouple import config
+from django.conf import settings
 from datetime import date
 from jobs.models import JobApplication
 from ai_services.prompts import build_followup_prompt
 
 genai.configure(api_key=config('GEMINI_API_KEY'))
-model = genai.GenerativeModel("gemini-2.5-flash-lite")
+model = genai.GenerativeModel(settings.AI_MODEL_NAME)
 
 
 def generate_followup(job, user):

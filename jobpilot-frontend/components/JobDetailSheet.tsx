@@ -159,11 +159,19 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                   </div>
                   <div>
                     <h5 className="text-sm font-bold text-white mb-1">Follow-up Strategy</h5>
-                    <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
+                    <p className="text-xs text-on-surface-variant leading-relaxed mb-2">
                       {isStale 
                         ? "This application has gone stale. We recommend sending a polite follow-up to the hiring manager to express your continued interest."
                         : "Your application is still fresh. Focus on preparing for potential technical interviews or researching the company culture."}
                     </p>
+                    {job.experience_required && (
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary/10 px-2 py-0.5 rounded border border-secondary/20">
+                          {job.experience_required}
+                        </span>
+                        <span className="text-[10px] text-outline italic">Required Experience</span>
+                      </div>
+                    )}
                     <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-container transition-colors group">
                       Open Follow-up Coach
                       <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -173,6 +181,23 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
               </div>
             </div>
           </section>
+
+          {/* Key Skills Section */}
+          {job.key_skills && job.key_skills.length > 0 && (
+            <section>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-outline mb-4 flex items-center">
+                <Sparkles size={14} className="mr-2 text-primary" />
+                Required Key Skills
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {job.key_skills.map((skill, index) => (
+                  <span key={index} className="px-3 py-1.5 bg-surface-container-high border border-outline-variant/20 rounded-lg text-xs font-medium text-white shadow-sm hover:border-primary/30 transition-colors">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Job Description Section */}
           <section>

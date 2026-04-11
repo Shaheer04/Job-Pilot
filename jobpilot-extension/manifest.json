@@ -1,15 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "JobPilot Extension",
-  "version": "1.0.0",
+  "name": "JobPilot Clipper",
+  "version": "1.3.0",
   "description": "Clip job descriptions directly from LinkedIn and Indeed to your JobPilot tracker.",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": "logo.svg"
+  },
+  "icons": {
+    "128": "logo.svg"
   },
   "permissions": [
     "storage",
     "activeTab",
-    "contextMenus"
+    "contextMenus",
+    "scripting"
   ],
   "host_permissions": [
     "https://www.linkedin.com/*",
@@ -25,8 +30,8 @@
         "https://www.linkedin.com/*",
         "https://www.indeed.com/*"
       ],
-      "js": ["content.js"]
+      "js": ["content.js"],
+      "css": ["content.css"]
     }
   ]
 }
-  

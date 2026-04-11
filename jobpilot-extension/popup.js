@@ -7,32 +7,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const loading = document.getElementById("loading");
   const jobDetails = document.getElementById("job-details");
 
+  function showLogin() {
+    loginView.classList.remove("hidden");
+    mainView.classList.add("hidden");
+  }
+
+  function showMain() {
+    loginView.classList.add("hidden");
+    mainView.classList.remove("hidden");
+  }
+
   // 1. Check Auth
   const { access_token } = await chrome.storage.local.get(["access_token"]);
 
   if (!access_token) {
     showLogin();
   } else {
-    // Check for pending selection from context menu
-    const { pendingSelection, pendingSource } = await chrome.storage.local.get(["pendingSelection", "pendingSource"]);
-    
-    if (pendingSelection) {
-      startExtraction(pendingSelection, pendingSource);
-      chrome.storage.local.remove(["pendingSelection", "pendingSource"]);
-    } else {
-      startExtraction();
-    }
+    showMain();
   }
 
-  function showLogin() {
-    loginView.classList.remove("hidden");
-    mainView.classList.add("hidden");
-  }
-
+  // Login Handler
   document.getElementById("login-btn").addEventListener("click", async () => {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
     const errorDiv = document.getElementById("login-error");
+    const btn = document.getElementById("login-btn");
+
+    btn.innerText = "Authenticating...";
+    btn.disabled = true;
 
     try {
       const response = await fetch(`${API_URL}/api/auth/login/`, {
@@ -45,14 +47,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const data = await response.json();
       await chrome.storage.local.set({ access_token: data.access });
-      
-      loginView.classList.add("hidden");
-      mainView.classList.remove("hidden");
-      startExtraction();
+      showMain();
     } catch (err) {
       errorDiv.innerText = err.message;
       errorDiv.classList.remove("hidden");
+      btn.innerText = "Initialize Access";
+      btn.disabled = false;
     }
+  });
+
+  // Logout Handler
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    await chrome.storage.local.remove(["access_token"]);
+    showLogin();
   });
 
   async function startExtraction(rawText = null, forcedSource = null) {

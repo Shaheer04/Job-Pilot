@@ -5,157 +5,267 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JobPilot Clipper</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
     :root {
       --bg: #131315;
-      --surface: #201f22;
+      --surface: #1c1b1d;
+      --surface-high: #2a2a2c;
       --primary: #c0c1ff;
+      --primary-container: #0d0096;
       --on-surface: #e5e1e4;
+      --on-surface-variant: #c7c4d7;
       --outline: #464554;
       --error: #ffb4ab;
+      --secondary: #a4c9ff;
     }
 
     body {
-      width: 350px;
+      width: 320px;
       margin: 0;
       font-family: 'Inter', sans-serif;
       background-color: var(--bg);
       color: var(--on-surface);
-      padding: 16px;
+      overflow: hidden;
     }
 
-    h1 {
-      font-size: 1.25rem;
-      margin-bottom: 16px;
-      color: var(--primary);
+    /* Shared Styles */
+    .hidden { display: none !important; }
+    
+    .container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .card {
-      background-color: var(--surface);
-      border: 1px solid var(--outline);
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(192, 193, 255, 0.2);
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin: 0;
+      color: white;
+    }
+
+    .header span {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--primary);
+      font-weight: 800;
+      display: block;
+      margin-top: -2px;
+    }
+
+    /* Auth View */
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--outline);
+      border-radius: 16px;
+      padding: 20px;
     }
 
     .form-group {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     label {
       display: block;
-      font-size: 0.75rem;
-      margin-bottom: 4px;
-      color: var(--primary);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--on-surface-variant);
+      margin-bottom: 6px;
+      margin-left: 4px;
     }
 
-    input, textarea, select {
+    input {
       width: 100%;
-      padding: 8px;
+      padding: 12px;
       background-color: var(--bg);
       border: 1px solid var(--outline);
-      color: var(--on-surface);
-      border-radius: 4px;
+      color: white;
+      border-radius: 10px;
       box-sizing: border-box;
-      font-size: 0.875rem;
+      font-size: 13px;
+      transition: all 0.2s;
     }
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: var(--primary);
-      color: #0d0096;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.875rem;
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(192, 193, 255, 0.1);
     }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .hidden { display: none; }
-    
-    .loading-spinner {
+    /* Main View */
+    .status-card {
+      background: linear-gradient(180deg, rgba(192, 193, 255, 0.05) 0%, transparent 100%);
+      border: 1px solid rgba(192, 193, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px 16px;
       text-align: center;
-      padding: 20px;
+      margin-bottom: 20px;
     }
 
-    #error-message {
+    .status-icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .status-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .status-subtext {
+      font-size: 11px;
+      color: var(--on-surface-variant);
+      line-height: 1.4;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--primary-container);
+      box-shadow: 0 4px 15px rgba(192, 193, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--outline);
+      color: var(--on-surface-variant);
+      margin-top: 12px;
+    }
+
+    .btn-outline:hover {
+      background: var(--surface-high);
+      color: white;
+    }
+
+    .error-msg {
+      background: rgba(255, 180, 171, 0.1);
       color: var(--error);
-      font-size: 0.75rem;
-      margin-bottom: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 180, 171, 0.2);
     }
 
-    .badge {
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--outline);
-      margin-right: 4px;
+    /* Footer */
+    .footer {
+      margin-top: auto;
+      padding-top: 20px;
+      text-align: center;
+      border-top: 1px solid var(--outline);
+      opacity: 0.5;
+    }
+
+    .footer p {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0;
     }
   </style>
 </head>
 <body>
-  <h1>JobPilot Clipper</h1>
-
-  <!-- Login View -->
-  <div id="login-view" class="hidden">
-    <div id="login-error" class="hidden"></div>
-    <div class="form-group">
-      <label>Username</label>
-      <input type="text" id="username" placeholder="Enter username">
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" id="password" placeholder="••••••••">
-    </div>
-    <button id="login-btn">Log In</button>
-  </div>
-
-  <!-- Main View -->
-  <div id="main-view">
-    <div id="loading" class="loading-spinner">
-      Scanning page...
+  <div class="container">
+    <div class="header">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: #0d0096">
+          <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>JobPilot</h1>
+        <span>Clipper v1.3</span>
+      </div>
     </div>
 
-    <div id="job-details" class="hidden">
-      <div id="status-message" class="hidden"></div>
+    <!-- Login View -->
+    <div id="login-view" class="hidden">
+      <div class="auth-card">
+        <div id="login-error" class="error-msg hidden"></div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="pilot_01">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="••••••••">
+        </div>
+        <button id="login-btn" class="btn btn-primary">
+          Initialize Access
+        </button>
+      </div>
+    </div>
+
+    <!-- Active View -->
+    <div id="main-view" class="hidden">
+      <div class="status-card">
+        <div class="status-icon">🚀</div>
+        <div class="status-text">Clipper Active</div>
+        <div class="status-subtext">
+          Right-click any job description on LinkedIn or Indeed to track it instantly.
+        </div>
+      </div>
       
-      <div class="form-group">
-        <label>Job Title</label>
-        <input type="text" id="job-title">
-      </div>
-      
-      <div class="form-group">
-        <label>Company</label>
-        <input type="text" id="job-company">
-      </div>
+      <button id="logout-btn" class="btn btn-outline">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Terminate Session
+      </button>
+    </div>
 
-      <div class="form-group">
-        <label>Location</label>
-        <input type="text" id="job-location">
-      </div>
-
-      <div class="form-group">
-        <label>Type</label>
-        <select id="job-type">
-          <option value="Full-time">Full-time</option>
-          <option value="Part-time">Part-time</option>
-          <option value="Contract">Contract</option>
-          <option value="Freelance">Freelance</option>
-          <option value="Internship">Internship</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Salary Range</label>
-        <input type="text" id="job-salary" placeholder="e.g. $80k - $120k">
-      </div>
-
-      <button id="save-btn">Add to Tracker</button>
+    <div class="footer">
+      <p>Tactical Search Utility</p>
     </div>
   </div>
 

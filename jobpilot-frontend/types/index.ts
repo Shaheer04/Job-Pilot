@@ -9,6 +9,8 @@ export interface JobApplication {
   source?: string;
   job_type?: string;
   salary_range?: string;
+  key_skills?: string[];
+  experience_required?: string;
   current_stage: JobStage;
   applied_date: string;
   days_since_applied: number;

@@ -137,7 +137,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Next.js dev server
+    "http://localhost:8000",  # Local backend
+    "http://127.0.0.1:8000", # Local backend IP
 ]
+
+# Since browser extensions can have dynamic IDs or injected origins
+CORS_ALLOW_ALL_ORIGINS = True # Recommended for dev with extensions
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -150,6 +155,9 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+# AI Service Settings
+AI_MODEL_NAME = config("AI_MODEL_NAME", default="gemini-2.5-flash")
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

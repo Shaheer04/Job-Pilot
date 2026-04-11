@@ -9,7 +9,7 @@ export const TopNav = () => {
           <Search className="absolute left-3 text-zinc-500" size={16} />
           <input
             className="bg-transparent border-none focus:ring-0 text-sm text-zinc-300 w-64 pl-10 outline-none"
-            placeholder="Quick search archives..."
+            placeholder="Search your jobs..."
             type="text"
           />
         </div>
