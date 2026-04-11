@@ -1,16 +1,8 @@
-from jobs.models import JobApplication
-from django.db.models import Count
+from jobs.models import JobApplication, ApplicationStage
+from django.db.models import Count, Avg, F, Q
 from datetime import timedelta
 from django.utils import timezone
-import json
-import google.generativeai as genai
-from decouple import config
-from django.conf import settings
-from ai_services.prompts import build_health_score_prompt
-
-genai.configure(api_key=config("GEMINI_API_KEY"))
-model = genai.GenerativeModel(settings.AI_MODEL_NAME)
-
+from django.db.models.functions import TruncDate
 
 def calculate_stats(user):
     all_jobs = JobApplication.objects.filter(user=user)
@@ -19,115 +11,104 @@ def calculate_stats(user):
     if total == 0:
         return {
             'total_applications': 0,
-            'stage_counts': {
-                'applied': 0, 'followed_up': 0, 'interview': 0, 
-                'offer': 0, 'rejected': 0, 'archived': 0
-            },
+            'stage_counts': {'applied': 0, 'followed_up': 0, 'interview': 0, 'offer': 0, 'rejected': 0, 'archived': 0},
             'interview_rate': 0,
             'best_source': 'N/A',
             'stale_count': 0,
             'weekly_momentum': 0,
-            'rating': 'Analyzing'
+            'rating': 'Analyzing',
+            'funnel': [],
+            'top_skills': [],
+            'source_performance': [],
+            'rule_advice': {"summary": "Start tracking jobs to see insights.", "actions": []}
         }
     
-    # Stage Counts
+    # 1. Stage Counts & Funnel
     stages_qs = all_jobs.values('current_stage').annotate(count=Count('id'))
-    stage_counts = {
-        'applied': 0, 'followed_up': 0, 'interview': 0, 
-        'offer': 0, 'rejected': 0, 'archived': 0
-    }
+    stage_counts = {'applied': 0, 'followed_up': 0, 'interview': 0, 'offer': 0, 'rejected': 0, 'archived': 0}
     for item in stages_qs:
         stage_counts[item['current_stage']] = item['count']
     
-    # Apply to interview rate
-    progressed = stage_counts.get('interview', 0) + stage_counts.get('offer', 0)
-    interview_rate = round((progressed / total) * 100, 1)
+    # Funnel Percentages (Relative to Total)
+    funnel = [
+        {"stage": "Applied", "count": total, "pct": 100},
+        {"stage": "Interview", "count": stage_counts['interview'] + stage_counts['offer'], 
+         "pct": round(((stage_counts['interview'] + stage_counts['offer']) / total) * 100, 1)},
+        {"stage": "Offers", "count": stage_counts['offer'], 
+         "pct": round((stage_counts['offer'] / total) * 100, 1)}
+    ]
+
+    # 2. Source Performance
+    sources = all_jobs.exclude(source='').values('source').annotate(
+        total_count=Count('id'),
+        interview_count=Count('id', filter=Q(current_stage__in=['interview', 'offer']))
+    ).order_by('-total_count')
     
-    # Best Source
-    sources = all_jobs.exclude(source='').values('source').annotate(count=Count('id')).order_by('-count')
-    best_source = sources[0]['source'] if sources.exists() else 'Direct'
+    source_perf = []
+    for s in sources:
+        rate = round((s['interview_count'] / s['total_count']) * 100, 1) if s['total_count'] > 0 else 0
+        source_perf.append({"source": s['source'], "count": s['total_count'], "rate": rate})
+
+    # 3. Top Skills Frequency
+    all_skills = []
+    for job_skills in all_jobs.exclude(key_skills=[]).values_list('key_skills', flat=True):
+        if isinstance(job_skills, list):
+            all_skills.extend(job_skills)
     
-    # Rejections logic
-    pre_interview_rejections = all_jobs.filter(current_stage='rejected').count()
-    post_interview_rejections = all_jobs.filter(
-        current_stage='rejected',
-        stage_history__stage='interview'
-    ).distinct().count()
-    pre_interview_rejections = max(0, pre_interview_rejections - post_interview_rejections)
-        
-    # Stale applications 
+    skill_counts = {}
+    for s in all_skills:
+        skill_counts[s] = skill_counts.get(s, 0) + 1
+    
+    top_skills = sorted([{"name": k, "count": v} for k, v in skill_counts.items()], 
+                        key=lambda x: x['count'], reverse=True)[:8]
+
+    # 4. Stale applications 
     seven_days_ago = timezone.now() - timedelta(days=7)
     stale_count = all_jobs.filter(
         updated_at__lt=seven_days_ago,
         current_stage__in=['applied', 'followed_up']
     ).count()
     
-    # Weekly momentum 
-    now = timezone.now()
-    this_week = all_jobs.filter(created_at__gte=now - timedelta(days=7)).count()
-    last_week = all_jobs.filter(
-        created_at__gte=now - timedelta(days=14),
-        created_at__lt=now - timedelta(days=7)
-    ).count()
+    # 5. Rating & Rule-Based Advice
+    interview_rate = funnel[1]['pct']
     
-    # Overall rating
-    if interview_rate >= 15 and stale_count == 0:
-        overall_rating = 'Healthy'
-    elif interview_rate >= 8 or stale_count <= 3:
-        overall_rating = 'Needs Attention'
+    if interview_rate >= 20:
+        rating = "Healthy"
+        summary = "Your conversion rate is excellent. You're targeting the right roles."
+    elif interview_rate >= 10:
+        rating = "Needs Attention"
+        summary = "You're getting some traction, but your funnel could be tighter."
     else:
-        overall_rating = 'Critical'
-        
-    # Match frontend keys exactly
+        rating = "Critical"
+        summary = "Low interview volume detected. Your resume might not be matching job requirements."
+
+    # Generate Logic-Driven Actions
+    actions = []
+    if interview_rate < 10:
+        actions.append("Optimize your resume: Your apply-to-interview rate is low.")
+    if stale_count > 0:
+        actions.append(f"Follow up: You have {stale_count} applications that haven't moved in 7+ days.")
+    if len(source_perf) > 1 and source_perf[0]['rate'] < (source_perf[1]['rate'] if len(source_perf) > 1 else 0):
+        actions.append(f"Shift focus: {source_perf[1]['source']} is performing better than {source_perf[0]['source']}.")
+    if not top_skills:
+        actions.append("Add job descriptions to see which skills are most requested in your search.")
+    elif len(top_skills) > 0 and top_skills[0]['count'] > (total / 2):
+        actions.append(f"Highlight {top_skills[0]['name']}: This skill appears in over 50% of your targeted jobs.")
+
     return {
         'total_applications': total,
         'stage_counts': stage_counts,
         'interview_rate': interview_rate,
-        'best_source': best_source,
-        'all_sources': list(sources), # Added this
+        'rating': rating,
         'stale_count': stale_count,
-        'weekly_momentum': this_week,
-        'rating': overall_rating,
-        # Legacy fields for AI prompt
-        'total': total,
-        'by_stage': stage_counts,
-        'pre_interview_rejections': pre_interview_rejections,
-        'post_interview_rejections': post_interview_rejections,
-        'momentum': {
-            'this_week': this_week,
-            'last_week': last_week,
-            'trend': 'increasing' if this_week > last_week else 'steady'
-        },
-        'overall_rating': overall_rating
-    }
-    
-    
-def generate_advice(stats):
-    try:
-        # Minimum 5 apps for AI advice to be meaningful
-        if stats['total_applications'] < 5:
-            return {
-                "summary": "Track at least 5 applications to unlock AI tactical advice.",
-                "whats_working": "Initial setup",
-                "main_problem": "Insufficient data",
-                "top_3_actions": ["Add 5+ applications", "Complete job details", "Update job stages"]
-            }
-
-        prompt = build_health_score_prompt(stats)
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        
-        # Strip markdown and any noise
-        if "{" in text:
-            text = text[text.find("{"):text.rfind("}")+1]
-
-        return json.loads(text)
-
-    except Exception as e:
-        print(f"Advice Error: {e}")
-        return {
-            "summary": "AI strategy engine is warming up.",
-            "whats_working": "Data collection",
-            "main_problem": "AI timeout",
-            "top_3_actions": ["Keep tracking jobs", "Check back later", "Manual follow-up"],
+        'funnel': funnel,
+        'source_performance': source_perf,
+        'top_skills': top_skills,
+        'rule_advice': {
+            'summary': summary,
+            'actions': actions[:3]
         }
+    }
+
+def generate_advice(stats):
+    return stats['rule_advice']

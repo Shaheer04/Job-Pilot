@@ -6,11 +6,11 @@ import { Sidebar } from "@/components/Sidebar";
 import { TopNav } from "@/components/TopNav";
 import { AddJobModal } from "@/components/AddJobModal";
 import { useHealthScore } from "@/hooks/useHealthScore";
-import { AlertCircle, Sparkles } from "lucide-react";
+import { AlertCircle, Zap, Target, TrendingUp, BarChart3, Briefcase } from "lucide-react";
 
 export default function OverviewPage() {
   const router = useRouter();
-  const { data: hs, isLoading, error } = useHealthScore();
+  const { data: hs, isLoading, error, refetch, isFetching } = useHealthScore();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,7 +30,7 @@ export default function OverviewPage() {
           </h2>
           <p className="text-on-surface-variant text-sm mt-1">
             {isAuthError 
-              ? "Your tactical session has ended. Redirecting to login..." 
+              ? "Your session has ended. Redirecting to login..." 
               : "Unable to retrieve search analytics. Please try again later."}
           </p>
         </div>
@@ -46,132 +46,171 @@ export default function OverviewPage() {
     );
   }
 
-  // Defensive values to prevent crashes during initial load
   const stats = hs?.stats;
-  const stageCounts = stats?.stage_counts || {
-    applied: 0,
-    followed_up: 0,
-    interview: 0,
-    offer: 0,
-    rejected: 0,
-    archived: 0
-  };
+  const advice = hs?.advice;
 
   return (
     <>
       <Sidebar />
-      <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-surface relative">
+      <main className="flex-1 flex flex-col h-screen overflow-y-auto bg-surface relative custom-scrollbar">
         <TopNav />
         
-        <div className="p-8 max-w-7xl mx-auto w-full space-y-8">
+        <div className="p-8 max-w-7xl mx-auto w-full space-y-10">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-outline-variant/10 pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-outline-variant/10 pb-8">
             <div>
-              <h2 className="text-3xl font-semibold tracking-tight text-white mb-1">System Analytics</h2>
-              <p className="text-on-surface-variant font-medium">Welcome back, operative. Here is your weekly status.</p>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-1">Search Insights</h2>
+              <p className="text-on-surface-variant font-medium text-sm">Data-driven performance metrics for your job search.</p>
             </div>
-            <div className="font-mono text-xs text-indigo-400 bg-indigo-400/5 border border-indigo-400/10 px-3 py-1.5 rounded-sm">
-              LAST_UPDATE: {new Date().toISOString().split('T')[0]}
+            <button 
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest rounded-lg border border-zinc-700 transition-all"
+            >
+              <TrendingUp size={14} className={`${isFetching ? 'animate-spin' : ''}`} />
+              {isFetching ? 'Refreshing...' : 'Refresh Metrics'}
+            </button>
+          </div>
+
+          {/* Top Row: Core Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-surface-container-low p-6 border border-outline-variant/5 rounded-2xl">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-outline font-black mb-4">Total Applications</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-black text-white font-mono">{stats?.total_applications || 0}</span>
+                <span className="text-xs text-indigo-400 font-bold uppercase tracking-widest">Active</span>
+              </div>
+            </div>
+            <div className="bg-surface-container-low p-6 border border-outline-variant/5 rounded-2xl">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-outline font-black mb-4">Interview Rate</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-black text-white font-mono">{stats?.interview_rate || 0}%</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${stats?.rating === 'Healthy' ? 'text-green-400' : 'text-amber-400'}`}>
+                  {stats?.rating}
+                </span>
+              </div>
+            </div>
+            <div className="bg-surface-container-low p-6 border border-outline-variant/5 rounded-2xl">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-outline font-black mb-4">Stale Apps</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-black text-white font-mono">{stats?.stale_count || 0}</span>
+                <span className="text-[10px] text-error font-black uppercase tracking-widest">Urgent</span>
+              </div>
+            </div>
+            <div className="bg-surface-container-low p-6 border border-outline-variant/5 rounded-2xl">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-outline font-black mb-4">Top Source</p>
+              <div className="flex items-baseline gap-3">
+                <span className="text-xl font-black text-white truncate max-w-full capitalize">{stats?.source_performance?.[0]?.source || 'None'}</span>
+              </div>
             </div>
           </div>
 
-          {/* Bento Layout Grid */}
-          <div className="grid grid-cols-12 gap-6">
-            {/* Stat Cards */}
-            <div className="col-span-12 lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Card 1 */}
-              <div className="bg-surface-container-low p-5 border border-outline-variant/5 rounded-md hover:bg-surface-container-high transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-3">Total Apps</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold text-white font-mono">{stats?.total_applications || 0}</span>
-                  <span className="text-[10px] text-secondary font-bold font-mono">+{stats?.weekly_momentum || 0}</span>
+          <div className="grid grid-cols-12 gap-8">
+            {/* Conversion Funnel */}
+            <div className="col-span-12 lg:col-span-7 space-y-6">
+              <div className="bg-surface-container-low p-8 border border-outline-variant/5 rounded-2xl">
+                <div className="flex items-center gap-3 mb-8">
+                  <BarChart3 className="text-indigo-400" size={20} />
+                  <h3 className="text-lg font-black text-white uppercase tracking-tight">Application Funnel</h3>
                 </div>
-              </div>
-              {/* Card 2 */}
-              <div className="bg-surface-container-low p-5 border border-outline-variant/5 rounded-md hover:bg-surface-container-high transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-3">Interviews</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold text-white font-mono">{stageCounts.interview || 0}</span>
-                  <span className="text-[10px] text-secondary font-bold font-mono">Active</span>
-                </div>
-              </div>
-              {/* Card 3 */}
-              <div className="bg-surface-container-low p-5 border border-outline-variant/5 rounded-md hover:bg-surface-container-high transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-3">Offer Rate</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold text-white font-mono">{stats?.interview_rate || 0}%</span>
-                  <span className="text-[10px] text-tertiary font-bold font-mono">KPI</span>
-                </div>
-              </div>
-              {/* Card 4 */}
-              <div className="bg-surface-container-low p-5 border border-outline-variant/5 rounded-md hover:bg-surface-container-high transition-colors">
-                <p className="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-3">Rejections</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-semibold text-white font-mono">{stageCounts.rejected || 0}</span>
-                  <span className="text-[10px] text-error font-bold font-mono">Stable</span>
+                <div className="space-y-8">
+                  {stats?.funnel?.map((step: any, i: number) => (
+                    <div key={i} className="relative">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-xs font-black uppercase tracking-widest text-outline">{step.stage}</span>
+                        <span className="text-sm font-mono font-bold text-white">{step.count} ({step.pct}%)</span>
+                      </div>
+                      <div className="h-3 w-full bg-surface rounded-full overflow-hidden border border-outline-variant/10">
+                        <div 
+                          className="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-full transition-all duration-1000"
+                          style={{ width: `${step.pct}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Gemini Advice Card */}
-              <div className="col-span-full bg-gradient-to-br from-surface-container-high to-surface-container p-6 rounded-lg border border-primary/20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <Sparkles size={96} />
+              {/* Source Success Table */}
+              <div className="bg-surface-container-low p-8 border border-outline-variant/5 rounded-2xl">
+                <div className="flex items-center gap-3 mb-8">
+                  <Target className="text-indigo-400" size={20} />
+                  <h3 className="text-lg font-black text-white uppercase tracking-tight">Source Efficiency</h3>
                 </div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="text-primary" size={20} />
-                  <h3 className="text-lg font-semibold tracking-tight text-white">AI Strategy for this Week</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-[10px] uppercase tracking-widest text-outline border-b border-outline-variant/10">
+                        <th className="pb-4 font-black">Platform</th>
+                        <th className="pb-4 font-black">Apps</th>
+                        <th className="pb-4 font-black">Success Rate</th>
+                      </tr>
+                    </thead>
+                    <tbody className="text-sm">
+                      {stats?.source_performance?.map((s: any, i: number) => (
+                        <tr key={i} className="border-b border-outline-variant/5 last:border-0">
+                          <td className="py-4 font-bold text-white capitalize">{s.source}</td>
+                          <td className="py-4 text-outline font-mono">{s.count}</td>
+                          <td className="py-4">
+                            <span className="text-indigo-400 font-black font-mono">{s.rate}%</span>
+                          </td>
+                        </tr>
+                      ))}
+                      {!stats?.source_performance?.length && (
+                        <tr><td colSpan={3} className="py-8 text-center text-outline italic">No source data available.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-                {isLoading ? (
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-4 bg-zinc-800 rounded w-3/4"></div>
-                    <div className="h-4 bg-zinc-800 rounded w-1/2"></div>
-                  </div>
-                ) : (
+              </div>
+            </div>
+
+            {/* Sidebar Stats: Skills & Advice */}
+            <div className="col-span-12 lg:col-span-5 space-y-8">
+              {/* Rule-Based Advice */}
+              <div className="bg-indigo-500/5 border border-indigo-500/20 p-8 rounded-2xl relative overflow-hidden">
+                <Zap className="absolute top-[-10px] right-[-10px] text-indigo-500/10" size={120} />
+                <div className="relative z-10">
+                  <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <TrendingUp size={16} className="text-indigo-400" />
+                    Strategic Actions
+                  </h3>
+                  <p className="text-sm text-indigo-200/80 leading-relaxed mb-6 font-medium italic">
+                    "{advice?.summary}"
+                  </p>
                   <ul className="space-y-4">
-                    {hs?.advice.top_3_actions.map((action, i) => (
-                      <li key={i} className="flex gap-4 items-start">
-                        <span className="font-mono text-primary text-xs mt-1">0{i+1}</span>
-                        <p className="text-sm text-on-surface-variant leading-relaxed">
+                    {advice?.actions.map((action: string, i: number) => (
+                      <li key={i} className="flex gap-3 items-start bg-zinc-950/40 p-3 rounded-lg border border-white/5">
+                        <span className="text-[10px] font-black bg-indigo-500 text-white w-5 h-5 flex items-center justify-center rounded-md shrink-0 mt-0.5">
+                          {i+1}
+                        </span>
+                        <p className="text-xs text-white leading-relaxed font-bold uppercase tracking-tight">
                           {action}
                         </p>
                       </li>
                     ))}
-                    {!hs?.advice && <p className="text-sm text-on-surface-variant italic">Add more applications to receive AI tactical advice.</p>}
                   </ul>
-                )}
-              </div>
-            </div>
-
-            {/* AI Health Score */}
-            <div className="col-span-12 lg:col-span-4 space-y-6">
-              <div className="bg-surface-container-low border border-outline-variant/10 rounded-xl p-8 flex flex-col items-center text-center">
-                <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-on-surface-variant mb-8">AI Health Score</h3>
-                <div className="relative w-48 h-48 flex items-center justify-center">
-                  <svg className="w-full h-full -rotate-90">
-                    <circle className="text-zinc-800" cx="96" cy="96" fill="transparent" r="88" stroke="currentColor" strokeWidth="4"></circle>
-                    <circle 
-                      className="text-secondary drop-shadow-[0_0_8px_rgba(164,201,255,0.4)] transition-all duration-1000" 
-                      cx="96" cy="96" 
-                      fill="transparent" 
-                      r="88" 
-                      stroke="currentColor" 
-                      strokeDasharray="552.92" 
-                      strokeDashoffset={552.92 - (552.92 * (stats?.interview_rate || 0) / 100)} 
-                      strokeWidth="6"
-                    ></circle>
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-5xl font-black text-white font-mono">{stats?.interview_rate || 0}%</span>
-                    <span className="text-[10px] text-secondary font-bold uppercase tracking-widest mt-1">{stats?.rating || 'Analyzing'}</span>
-                  </div>
                 </div>
-                <div className="mt-8">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider border border-secondary/20">
-                    Based on your recent activity
-                  </span>
-                  <p className="text-xs text-zinc-500 mt-4 leading-relaxed max-w-[200px] mx-auto">
-                    {hs?.advice.summary || "Complete your profile to see how you track against candidates."}
-                  </p>
+              </div>
+
+              {/* Skills Heatmap */}
+              <div className="bg-surface-container-low p-8 border border-outline-variant/5 rounded-2xl">
+                <div className="flex items-center gap-3 mb-6">
+                  <Briefcase className="text-indigo-400" size={20} />
+                  <h3 className="text-lg font-black text-white uppercase tracking-tight">Requested Skills</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {stats?.top_skills?.map((skill: any, i: number) => (
+                    <div key={i} className="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-lg border border-outline-variant/10 group hover:border-indigo-500/30 transition-all">
+                      <span className="text-xs font-bold text-white">{skill.name}</span>
+                      <span className="text-[10px] font-mono font-black text-indigo-400 bg-indigo-400/10 px-1.5 py-0.5 rounded">
+                        {skill.count}
+                      </span>
+                    </div>
+                  ))}
+                  {!stats?.top_skills?.length && (
+                    <p className="text-xs text-outline italic py-4">Track jobs with descriptions to see skill analytics.</p>
+                  )}
                 </div>
               </div>
             </div>
