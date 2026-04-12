@@ -26,9 +26,22 @@ export const useJobDetail = (jobId?: number) => {
     },
   });
 
+  const updateJobMutation = useMutation({
+    mutationFn: async (updatedData: Partial<JobDetail>) => {
+      if (!jobId) return;
+      const { data } = await api.put(`/jobs/${jobId}/`, updatedData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    },
+  });
+
   return {
     job: jobQuery.data,
     isLoading: jobQuery.isLoading,
     addNote: addNoteMutation.mutateAsync,
+    updateJob: updateJobMutation.mutateAsync,
   };
 };

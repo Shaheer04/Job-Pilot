@@ -91,13 +91,14 @@ Respond ONLY with a raw JSON object. No markdown, no code blocks, no explanation
   "salary_range": "salary exactly as written, or empty string if not mentioned",
   "source": "LinkedIn or Indeed or Rozee or Company Website or Unknown",
   "key_skills": ["skill1", "skill2", "skill3"],
-  "experience_required": "e.g. 2-3 years or Senior or Entry-level or empty string"
+  "experience_required": "concise requirement, max 5 words, e.g. '3+ years' or 'Senior level' or 'Entry-level'"
 }}
 
 Rules:
 - Copy values directly from the text — do not rephrase or summarize
 - If a field genuinely cannot be found, use empty string — never guess
 - key_skills must be a list of specific technologies or skills mentioned (max 8)
+- experience_required MUST be very concise (max 5 words). Focus on years or level only.
 - For source: only use LinkedIn if the description mentions LinkedIn or description looks like a linkedin Post, otherwise use Unknown
 - title and company are the most important — look carefully before giving up
 """
