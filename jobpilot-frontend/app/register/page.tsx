@@ -42,12 +42,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-surface-container-lowest p-6">
-      <div className="w-full max-w-md bg-surface border border-outline-variant/20 rounded-xl shadow-2xl p-8">
-        <div className="mb-8 text-center">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-surface-container-lowest p-6">
+      <div className="mb-8 flex flex-col items-center gap-4">
+        <Link href="/" className="bg-gradient-to-br from-indigo-400 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
+          </svg>
+        </Link>
+        <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tighter text-white mb-2">Join JobPilot</h1>
-          <p className="text-sm text-on-surface-variant">Deploy your career archive today</p>
+          <p className="text-sm text-on-surface-variant">Deploy your smart job tracker today</p>
         </div>
+      </div>
+
+      <div className="w-full max-w-md bg-surface border border-outline-variant/20 rounded-xl shadow-2xl p-8">
 
         <form onSubmit={handleRegister} className="space-y-5">
           {error && (

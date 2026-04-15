@@ -30,7 +30,7 @@ export const Sidebar = () => {
 
   const navItems = [
     { name: "Analytics", href: "/overview", icon: LayoutDashboard },
-    { name: "Kanban", href: "/", icon: Kanban },
+    { name: "Kanban", href: "/jobs", icon: Kanban },
     { name: "Settings", href: "#", icon: Settings },
   ];
 
