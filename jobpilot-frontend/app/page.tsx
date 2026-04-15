@@ -33,29 +33,21 @@ export default function LandingPage() {
             <PlaneLogo className="w-7 h-7" />
             <span className="text-xl font-black text-white tracking-tighter">JobPilot</span>
           </Link>
-          <div className="hidden md:flex gap-6 items-center">
-            <Link className="text-zinc-500 hover:text-zinc-200 transition-all text-sm font-medium tracking-tight" href={isLoggedIn ? "/jobs" : "/login"}>Mission Control</Link>
-            <Link className="text-zinc-500 hover:text-zinc-200 transition-all text-sm font-medium tracking-tight" href={isLoggedIn ? "/jobs" : "/login"}>Analytics</Link>
-          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="hidden md:flex items-center gap-2 px-3 py-1 text-sm font-medium text-zinc-400 hover:text-zinc-200 transition-all">
-            <span className="material-symbols-outlined text-sm">search</span>
-            <span className="mono text-xs opacity-50">Search...</span>
-          </button>
+        <div className="flex items-center gap-6">
           {isLoggedIn ? (
-            <Link href="/jobs" className="bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20">
-              Go to Dashboard
+            <Link href="/jobs" className="bg-indigo-500 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20">
+              Dashboard
             </Link>
           ) : (
-            <div className="flex items-center gap-4">
+            <>
               <Link href="/login" className="text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest transition-all">
                 Login
               </Link>
-              <Link href="/register" className="bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20">
-                Join Now
+              <Link href="/register" className="bg-indigo-500 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20">
+                Get Started
               </Link>
-            </div>
+            </>
           )}
         </div>
       </nav>
@@ -252,24 +244,15 @@ export default function LandingPage() {
                 <span className="text-xl font-black text-white tracking-tighter">JobPilot</span>
               </Link>
               <p className="text-zinc-500 text-sm leading-relaxed">
-                The professional standard for job application tracking. Built for the modern, high-performance workforce.
+                The smart standard for job application tracking. Built for the modern workforce.
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-12">
               <div className="space-y-4">
                 <p className="mono text-[10px] text-indigo-400 uppercase tracking-widest font-bold">Product</p>
                 <ul className="space-y-2">
-                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Mission Control</Link></li>
-                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Health Analytics</Link></li>
-                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Pricing</Link></li>
-                </ul>
-              </div>
-              <div className="space-y-4">
-                <p className="mono text-[10px] text-indigo-400 uppercase tracking-widest font-bold">Company</p>
-                <ul className="space-y-2">
-                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Privacy</Link></li>
-                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Terms</Link></li>
-                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Open Source</Link></li>
+                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#features">Features</Link></li>
+                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="/register">Get Started</Link></li>
                 </ul>
               </div>
               <div className="space-y-4">
@@ -279,14 +262,17 @@ export default function LandingPage() {
                   <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Support</Link></li>
                 </ul>
               </div>
+              <div className="space-y-4">
+                <p className="mono text-[10px] text-indigo-400 uppercase tracking-widest font-bold">Legal</p>
+                <ul className="space-y-2">
+                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Privacy</Link></li>
+                  <li><Link className="text-sm text-zinc-400 hover:text-white transition-colors" href="#">Terms</Link></li>
+                </ul>
+              </div>
             </div>
           </div>
           <div className="mt-20 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="mono text-[10px] text-zinc-600 uppercase tracking-widest font-bold">© 2024 JobPilot Tactical Systems Inc.</p>
-            <div className="flex gap-6">
-              <span className="material-symbols-outlined text-zinc-600 hover:text-zinc-400 cursor-pointer transition-colors">language</span>
-              <span className="material-symbols-outlined text-zinc-600 hover:text-zinc-400 cursor-pointer transition-colors">share</span>
-            </div>
           </div>
         </div>
       </footer>
