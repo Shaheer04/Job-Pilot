@@ -9,6 +9,8 @@ interface UIState {
   toast: { message: string; isVisible: boolean } | null;
   showToast: (message: string) => void;
   hideToast: () => void;
+  jobSearchTerm: string;
+  setJobSearchTerm: (term: string) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -23,4 +25,6 @@ export const useUIStore = create<UIState>((set) => ({
     setTimeout(() => set({ toast: null }), 3000);
   },
   hideToast: () => set({ toast: null }),
+  jobSearchTerm: "",
+  setJobSearchTerm: (term) => set({ jobSearchTerm: term }),
 }));

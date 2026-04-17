@@ -1,7 +1,10 @@
 import React from "react";
 import { Search, Bell } from "lucide-react";
+import { useUIStore } from "@/store/uiStore";
 
 export const TopNav = () => {
+  const { jobSearchTerm, setJobSearchTerm } = useUIStore();
+
   return (
     <header className="flex justify-between items-center w-full px-6 py-3 h-14 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/40 z-10">
       <div className="flex items-center gap-8">
@@ -11,6 +14,8 @@ export const TopNav = () => {
             className="bg-transparent border-none focus:ring-0 text-sm text-zinc-300 w-64 pl-10 outline-none"
             placeholder="Search your jobs..."
             type="text"
+            value={jobSearchTerm}
+            onChange={(e) => setJobSearchTerm(e.target.value)}
           />
         </div>
         <nav className="hidden md:flex gap-6">

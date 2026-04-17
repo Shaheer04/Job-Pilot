@@ -4,13 +4,14 @@ import { JobApplication, JobStage } from '@/types';
 
 const EMPTY_JOBS: JobApplication[] = [];
 
-export const useJobs = () => {
+export const useJobs = (searchTerm: string = '') => {
   const queryClient = useQueryClient();
 
   const jobsQuery = useQuery({
-    queryKey: ['jobs'],
+    queryKey: ['jobs', searchTerm],
     queryFn: async () => {
-      const { data } = await api.get<JobApplication[]>('/jobs/');
+      const url = searchTerm ? `/jobs/?search=${encodeURIComponent(searchTerm)}` : '/jobs/';
+      const { data } = await api.get<JobApplication[]>(url);
       return data;
     },
   });

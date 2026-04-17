@@ -3,6 +3,7 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
     UpdateAPIView,
 )
+from rest_framework import filters
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -23,6 +24,10 @@ from .serializers import (
 
 class JobListCreateView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "company", "location", "description", "source", "experience_required"]
+    ordering_fields = ["created_at", "applied_date", "title", "company"]
+    ordering = ["-created_at"]  # Default to newest first
 
     def get_serializer_class(self):
         # Use the simple create serializer for POST requests
@@ -33,10 +38,7 @@ class JobListCreateView(ListCreateAPIView):
 
     def get_queryset(self):
         # SECURITY: users only ever see their own jobs
-        # order_by('created_at') means oldest jobs appear first (requested by user)
-        return JobApplication.objects.filter(user=self.request.user).order_by(
-            "created_at"
-        )
+        return JobApplication.objects.filter(user=self.request.user)
 
     def perform_create(self, seralizer):
         # Save the job and attach the current user automatically

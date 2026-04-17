@@ -8,11 +8,13 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { JobDetailSheet } from "@/components/JobDetailSheet";
 import { AddJobModal } from "@/components/AddJobModal";
 import { useJobs } from "@/hooks/useJobs";
+import { useUIStore } from "@/store/uiStore";
 import { JobApplication } from "@/types";
 
 export default function Home() {
   const router = useRouter();
-  const { jobs, isLoading, error } = useJobs();
+  const { jobSearchTerm } = useUIStore();
+  const { jobs, isLoading, error } = useJobs(jobSearchTerm);
   const [selectedJob, setSelectedJob] = useState<JobApplication | null>(null);
 
   useEffect(() => {
