@@ -4,12 +4,14 @@ from rest_framework.views import APIView
 from .services.health_score import calculate_stats, generate_advice
 from .services.followup import generate_followup
 from .services.extractor import extract_job_details
+from .throttles import SensitiveThrottle
 from jobs.models import JobApplication
 from django.shortcuts import get_object_or_404
 
 
 class HealthScoreView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [SensitiveThrottle]
 
     def get(self, request):
         stats = calculate_stats(request.user)
@@ -29,6 +31,7 @@ class HealthScoreView(APIView):
 
 class FollowUpView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [SensitiveThrottle]
 
     def post(self, request, pk):
         # verfiy the job exists and belongs to this user
@@ -41,6 +44,7 @@ class FollowUpView(APIView):
 
 class JobExtractionView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [SensitiveThrottle]
     
     def post(self, request):
         description = request.data.get('description', '')
