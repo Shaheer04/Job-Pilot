@@ -38,10 +38,20 @@ export const useJobDetail = (jobId?: number) => {
     },
   });
 
+  const followupMutation = useMutation({
+    mutationFn: async () => {
+      if (!jobId) return null;
+      const { data } = await api.post(`/ai/followup/${jobId}/`);
+      return data.followup;
+    },
+  });
+
   return {
     job: jobQuery.data,
     isLoading: jobQuery.isLoading,
     addNote: addNoteMutation.mutateAsync,
     updateJob: updateJobMutation.mutateAsync,
+    getFollowup: followupMutation.mutateAsync,
+    isGeneratingFollowup: followupMutation.isPending,
   };
 };

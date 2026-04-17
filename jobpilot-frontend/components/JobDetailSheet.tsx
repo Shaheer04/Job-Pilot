@@ -19,6 +19,7 @@ import {
 import { JobApplication, JobStage } from "@/types";
 import { useJobDetail } from "@/hooks/useJobDetail";
 import { useJobs } from "@/hooks/useJobs";
+import { FollowUpModal } from "./FollowUpModal";
 
 interface JobDetailSheetProps {
   isOpen: boolean;
@@ -27,11 +28,22 @@ interface JobDetailSheetProps {
 }
 
 export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSheetProps) => {
-  const { job: fullJob, isLoading: isDetailLoading, addNote, updateJob } = useJobDetail(initialJob?.id);
+  const { 
+    job: fullJob, 
+    isLoading: isDetailLoading, 
+    addNote, 
+    updateJob,
+    getFollowup,
+    isGeneratingFollowup 
+  } = useJobDetail(initialJob?.id);
+  
   const { updateStage, deleteJob } = useJobs();
   const [noteContent, setNoteContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditEditForm] = useState<Partial<JobApplication>>({});
+  
+  const [isFollowUpModalOpen, setIsFollowUpModalOpen] = useState(false);
+  const [followUpData, setFollowUpData] = useState<any>(null);
 
   const job = fullJob || initialJob;
 
@@ -73,6 +85,16 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
     if (confirm("Are you sure you want to delete this application?")) {
       await deleteJob(job.id);
       onClose();
+    }
+  };
+
+  const handleOpenFollowUpCoach = async () => {
+    setIsFollowUpModalOpen(true);
+    try {
+      const data = await getFollowup();
+      setFollowUpData(data);
+    } catch (error) {
+      setFollowUpData({ error: "Failed to generate follow-up advice. Please try again." });
     }
   };
 
@@ -286,7 +308,10 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                           <span className="text-[10px] text-outline italic">Required Experience</span>
                         </div>
                       )}
-                      <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-container transition-colors group">
+                      <button 
+                        onClick={handleOpenFollowUpCoach}
+                        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary hover:text-primary-container transition-colors group"
+                      >
                         Open Follow-up Coach
                         <span className="group-hover:translate-x-1 transition-transform">→</span>
                       </button>
@@ -473,6 +498,17 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
             {isEditing ? "Save All Changes" : "Close Panel"}
           </button>
         </div>
+
+        {/* Follow-up Coach Modal */}
+        <FollowUpModal 
+          isOpen={isFollowUpModalOpen} 
+          onClose={() => {
+            setIsFollowUpModalOpen(false);
+            setFollowUpData(null);
+          }} 
+          data={followUpData} 
+          isLoading={isGeneratingFollowup} 
+        />
       </section>
     </div>
   );
