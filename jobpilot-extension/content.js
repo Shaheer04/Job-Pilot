@@ -1,6 +1,74 @@
 // content.js
 console.log("JobPilot Content Script Loaded. Refresh detected.");
 
+let currentFloatingBtn = null;
+
+// Listen for selection changes
+document.addEventListener('mousedown', (e) => {
+  // If clicking outside the floating button, remove it
+  if (currentFloatingBtn && !currentFloatingBtn.contains(e.target)) {
+    removeFloatingBtn();
+  }
+});
+
+document.addEventListener('mouseup', (e) => {
+  // Small delay to ensure selection is complete
+  setTimeout(() => {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return;
+    
+    const selectedText = selection.toString().trim();
+
+    // Only show if we have text and no modal is currently open
+    if (selectedText.length > 5 && !document.getElementById("jobpilot-modal-root")) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      // Ensure rect is valid (sometimes it's all zeros)
+      if (rect.width === 0 || rect.height === 0) return;
+      
+      // Position button above the selection
+      const x = rect.left + window.scrollX + (rect.width / 2);
+      const y = rect.top + window.scrollY - 45;
+      
+      showFloatingBtn(x, y, selectedText);
+    }
+  }, 10);
+});
+
+function showFloatingBtn(x, y, text) {
+  removeFloatingBtn();
+
+  const btn = document.createElement('button');
+  btn.className = 'jobpilot-floating-btn';
+  // Use a span for the text to ensure it's styled correctly
+  btn.innerHTML = `
+    <img src="${chrome.runtime.getURL('logo.svg')}" style="width: 18px; height: 18px; vertical-align: middle;" />
+    <span style="vertical-align: middle;">Send to JobPilot</span>
+  `;
+  btn.style.left = `${x}px`;
+  btn.style.top = `${y}px`;
+  btn.style.transform = 'translateX(-50%)';
+
+  btn.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Floating button clicked!");
+    showExtractionModal(text, window.location.hostname);
+    removeFloatingBtn();
+  };
+
+  document.body.appendChild(btn);
+  currentFloatingBtn = btn;
+}
+
+function removeFloatingBtn() {
+  if (currentFloatingBtn) {
+    currentFloatingBtn.remove();
+    currentFloatingBtn = null;
+  }
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("3. Content: Message received!", request.action);
   if (request.action === "CLIP_JOB") {
