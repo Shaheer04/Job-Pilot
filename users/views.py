@@ -1,4 +1,4 @@
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import RegisterSerializer, UserSerializer
@@ -25,12 +25,13 @@ class RegisterView(CreateAPIView):
 
 
 # ─── View 2: User Profile ────────────────────────────────────────────
-# Handles GET  /api/auth/profile/  → returns logged in user's info
-# Handles PUT  /api/auth/profile/  → updates logged in user's info
+# Handles GET    /api/auth/profile/  → returns logged in user's info
+# Handles PUT    /api/auth/profile/  → updates logged in user's info
+# Handles DELETE /api/auth/profile/  → deletes logged in user's account
 # Protected — user must send a valid JWT token to reach this
 
 
-class UserProfileView(RetrieveUpdateAPIView):
+class UserProfileView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 

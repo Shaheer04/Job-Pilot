@@ -48,7 +48,12 @@ export const AddJobModal = () => {
       showToast("Details extracted!");
     } catch (error: unknown) {
       console.error("AI extraction failed:", error);
-      showToast("AI extraction failed");
+      const err = error as { response?: { status?: number; data?: { error?: string } } };
+      if (err.response?.status === 503 || err.response?.data?.error) {
+        showToast(err.response?.data?.error || "AI is resting. Try manual entry.");
+      } else {
+        showToast("AI extraction failed");
+      }
     }
   };
 

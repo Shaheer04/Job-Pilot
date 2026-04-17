@@ -31,7 +31,7 @@ export const Sidebar = () => {
   const navItems = [
     { name: "Analytics", href: "/overview", icon: LayoutDashboard },
     { name: "Kanban", href: "/jobs", icon: Kanban },
-    { name: "Settings", href: "#", icon: Settings },
+    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   return (
@@ -111,16 +111,6 @@ export const Sidebar = () => {
       </div>
 
       <div className="pt-6 border-t border-zinc-800/50 space-y-1 px-4">
-        <a
-          title={isSidebarCollapsed ? "Support" : ""}
-          className={`flex items-center gap-3 px-3 py-2 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30 transition-colors duration-200 rounded-lg ${isSidebarCollapsed ? "justify-center" : ""}`}
-          href="#"
-        >
-          <HelpCircle size={20} className="text-indigo-500" />
-          {!isSidebarCollapsed && (
-            <span className="font-semibold text-lg tracking-tight">Support</span>
-          )}
-        </a>
         <button
           onClick={handleLogout}
           title={isSidebarCollapsed ? "Logout" : ""}

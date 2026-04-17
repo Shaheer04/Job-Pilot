@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { JobApplication, JobStage } from "@/types";
 import { useJobs } from "@/hooks/useJobs";
+import { useUIStore } from "@/store/uiStore";
 
 interface KanbanCardProps {
   card: JobApplication;
@@ -196,133 +197,175 @@ const KanbanColumn = ({
       
       {/* Column Content Area */}
       <div 
-        ref={setNodeRef}
-        className={`rounded-2xl p-3 border border-outline-variant/5 ${bgColor} transition-colors duration-300 min-h-[300px] h-fit`}
+      ref={setNodeRef}
+      className={`rounded-2xl p-3 border border-outline-variant/5 ${bgColor} transition-colors duration-300 min-h-[400px] h-fit flex flex-col`}
       >
-        <div className="flex flex-col gap-4 pb-4">
-            {cards.map((card) => (
-              <DraggableCard key={card.id} card={card} onCardClick={onCardClick} />
-            ))}
+      <div className="flex flex-col gap-4 pb-4">
+          {cards.map((card) => (
+            <DraggableCard key={card.id} card={card} onCardClick={onCardClick} />
+          ))}
+      </div>
+
+      {/* Column-specific Empty State */}
+      {cards.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-outline-variant/5 rounded-xl opacity-40 group-hover:opacity-100 transition-opacity">
+          {id === 'applied' ? (
+            <div className="flex flex-col items-center text-center">
+              <Zap size={20} className="text-indigo-400 mb-2" />
+              <p className="text-[10px] font-bold text-white uppercase tracking-widest">Start Clipping</p>
+              <p className="text-[9px] text-zinc-500 mt-1">Use the extension to add jobs instantly</p>
+            </div>
+          ) : id === 'interview' ? (
+            <div className="flex flex-col items-center text-center">
+              <Sparkles size={20} className="text-primary mb-2" />
+              <p className="text-[10px] font-bold text-white uppercase tracking-widest">Awaiting Stage</p>
+              <p className="text-[9px] text-zinc-500 mt-1">Move jobs here once scheduled</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center text-center">
+              <div className={`h-1.5 w-1.5 rounded-full ${dotColor} mb-2`}></div>
+              <p className="text-[10px] font-bold text-white uppercase tracking-widest">Empty Stage</p>
+            </div>
+          )}
+        </div>
+      )}
+      </div>
+      </div>
+      );
+      };
+
+      export const KanbanBoard = ({ 
+      jobs: initialJobs, 
+      onCardClick 
+      }: { 
+      jobs: JobApplication[]; 
+      onCardClick: (job: JobApplication) => void 
+      }) => {
+      const { updateStage } = useJobs();
+      const { openAddJobModal } = useUIStore();
+      const [activeCard, setActiveCard] = useState<JobApplication | null>(null);
+      const [localJobs, setLocalJobs] = useState<JobApplication[]>(initialJobs);
+
+      useEffect(() => {
+      if (!activeCard) {
+      const isSame = 
+      localJobs.length === initialJobs.length && 
+      localJobs.every((job, i) => job.id === initialJobs[i]?.id && job.current_stage === initialJobs[i]?.current_stage);
+
+      if (!isSame) {
+      setLocalJobs(initialJobs);
+      }
+      }
+      }, [initialJobs, activeCard, localJobs.length]);
+
+      const sensors = useSensors(
+      useSensor(PointerSensor, {
+      activationConstraint: {
+      distance: 8,
+      },
+      }),
+      useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      })
+      );
+
+      const columns: { title: string; stage: JobStage; dotColor: string; bgColor: string; grayscale?: boolean }[] = [
+      { title: "Applied", stage: "applied", dotColor: "bg-zinc-400", bgColor: "bg-zinc-500/[0.02]" },
+      { title: "Followed Up", stage: "followed_up", dotColor: "bg-indigo-500", bgColor: "bg-indigo-500/[0.03]" },
+      { title: "Interview", stage: "interview", dotColor: "bg-primary", bgColor: "bg-primary/[0.03]" },
+      { title: "Offer", stage: "offer", dotColor: "bg-tertiary", bgColor: "bg-tertiary/[0.03]" },
+      { title: "Rejected", stage: "rejected", dotColor: "bg-error", bgColor: "bg-error/[0.02]" },
+      { title: "Archived", stage: "archived", dotColor: "bg-zinc-700", bgColor: "bg-zinc-800/[0.02]", grayscale: true },
+      ];
+
+      const handleDragStart = (event: DragStartEvent) => {
+      const { active } = event;
+      const card = active.data.current?.card;
+      if (card) setActiveCard(card);
+      };
+
+      const handleDragOver = (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over) return;
+
+      const activeData = active.data.current;
+      const overData = over.data.current;
+
+      const activeStage = activeData?.card?.current_stage;
+      let overStage: JobStage | undefined;
+
+      if (overData?.type === 'column') {
+      overStage = overData.stage;
+      } else if (overData?.type === 'card') {
+      overStage = overData.card.current_stage;
+      }
+
+      if (!overStage || activeStage === overStage) return;
+
+      setLocalJobs((prev) => {
+      return prev.map((job) => {
+      if (job.id === active.id) {
+        return { ...job, current_stage: overStage! };
+      }
+      return job;
+      });
+      });
+      };
+
+      const handleDragEnd = async (event: DragEndEvent) => {
+      const { active, over } = event;
+      const activeId = active.id as number;
+
+      setActiveCard(null);
+
+      if (!over) return;
+
+      const draggedJob = localJobs.find(j => j.id === activeId);
+      const originalJob = initialJobs.find(j => j.id === activeId);
+
+      if (draggedJob && originalJob && draggedJob.current_stage !== originalJob.current_stage) {
+      await updateStage({ 
+      jobId: activeId, 
+      newStage: draggedJob.current_stage 
+      });
+      }
+      };
+
+      if (initialJobs.length === 0) {
+      return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface">
+      <div className="max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-700">
+        <div className="relative inline-block">
+          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
+          <div className="relative bg-surface-container-high border border-outline-variant/20 p-8 rounded-3xl shadow-2xl">
+            <Briefcase size={48} className="text-primary mx-auto mb-6" />
+            <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Your Board is Ready</h2>
+            <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
+              You haven't tracked any jobs yet. Start building your pipeline and let AI help you land your next role.
+            </p>
+          </div>
         </div>
 
-        {/* Extension Promo Ghost Card in Applied Column (Only if empty) */}
-        {id === 'applied' && cards.length === 0 && (
-          <div className="mt-2 border-2 border-dashed border-indigo-500/10 bg-indigo-500/[0.03] rounded-xl p-8 flex flex-col items-center justify-center text-center group hover:bg-indigo-500/[0.06] hover:border-indigo-500/20 transition-all cursor-pointer">
-            <div className="p-4 bg-indigo-500/10 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
-              <Zap size={24} className="text-indigo-400 fill-indigo-400/20" />
-            </div>
-            <h5 className="text-xs font-black text-white uppercase tracking-widest mb-2">Clipper Extension</h5>
-            <p className="text-[10px] text-zinc-500 leading-relaxed mb-5 px-2">
-              Add jobs directly from LinkedIn <br/>without manual copy-pasting.
-            </p>
-            <button className="px-5 py-2 bg-zinc-900 border border-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-lg hover:bg-indigo-500 hover:text-white transition-all shadow-lg">
-              Get Extension
-            </button>
-          </div>
-        )}
+        <div className="grid grid-cols-1 gap-4">
+          <button 
+            onClick={openAddJobModal}
+            className="w-full py-4 bg-primary text-indigo-900 text-xs font-black uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-primary/10 hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+          >
+            <Zap size={16} />
+            Add Your First Job
+          </button>
+          <p className="text-[10px] text-outline font-bold uppercase tracking-widest">
+            Or use our Chrome extension to clip from LinkedIn
+          </p>
+        </div>
       </div>
-    </div>
-  );
-};
-
-export const KanbanBoard = ({ 
-  jobs: initialJobs, 
-  onCardClick 
-}: { 
-  jobs: JobApplication[]; 
-  onCardClick: (job: JobApplication) => void 
-}) => {
-  const { updateStage } = useJobs();
-  const [activeCard, setActiveCard] = useState<JobApplication | null>(null);
-  const [localJobs, setLocalJobs] = useState<JobApplication[]>(initialJobs);
-
-  useEffect(() => {
-    if (!activeCard) {
-      const isSame = 
-        localJobs.length === initialJobs.length && 
-        localJobs.every((job, i) => job.id === initialJobs[i]?.id && job.current_stage === initialJobs[i]?.current_stage);
-      
-      if (!isSame) {
-        setLocalJobs(initialJobs);
+      </div>
+      );
       }
-    }
-  }, [initialJobs, activeCard, localJobs.length]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const columns: { title: string; stage: JobStage; dotColor: string; bgColor: string; grayscale?: boolean }[] = [
-    { title: "Applied", stage: "applied", dotColor: "bg-zinc-400", bgColor: "bg-zinc-500/[0.02]" },
-    { title: "Followed Up", stage: "followed_up", dotColor: "bg-indigo-500", bgColor: "bg-indigo-500/[0.03]" },
-    { title: "Interview", stage: "interview", dotColor: "bg-primary", bgColor: "bg-primary/[0.03]" },
-    { title: "Offer", stage: "offer", dotColor: "bg-tertiary", bgColor: "bg-tertiary/[0.03]" },
-    { title: "Rejected", stage: "rejected", dotColor: "bg-error", bgColor: "bg-error/[0.02]" },
-    { title: "Archived", stage: "archived", dotColor: "bg-zinc-700", bgColor: "bg-zinc-800/[0.02]", grayscale: true },
-  ];
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const card = active.data.current?.card;
-    if (card) setActiveCard(card);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeData = active.data.current;
-    const overData = over.data.current;
-
-    const activeStage = activeData?.card?.current_stage;
-    let overStage: JobStage | undefined;
-
-    if (overData?.type === 'column') {
-      overStage = overData.stage;
-    } else if (overData?.type === 'card') {
-      overStage = overData.card.current_stage;
-    }
-
-    if (!overStage || activeStage === overStage) return;
-
-    setLocalJobs((prev) => {
-      return prev.map((job) => {
-        if (job.id === active.id) {
-          return { ...job, current_stage: overStage! };
-        }
-        return job;
-      });
-    });
-  };
-
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    const activeId = active.id as number;
-    
-    setActiveCard(null);
-
-    if (!over) return;
-
-    const draggedJob = localJobs.find(j => j.id === activeId);
-    const originalJob = initialJobs.find(j => j.id === activeId);
-
-    if (draggedJob && originalJob && draggedJob.current_stage !== originalJob.current_stage) {
-      await updateStage({ 
-        jobId: activeId, 
-        newStage: draggedJob.current_stage 
-      });
-    }
-  };
-
-  return (
-    <DndContext 
+      return (
+      <DndContext 
+ 
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
