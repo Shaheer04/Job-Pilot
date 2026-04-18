@@ -40,6 +40,7 @@ ENV HOME=/home/user \
 # Expose the port
 EXPOSE 7860
 
-# Collect static files and start Gunicorn
-CMD python manage.py collectstatic --no-input && \
+# Migrate database, collect static files and start Gunicorn
+CMD python manage.py migrate --no-input && \
+    python manage.py collectstatic --no-input && \
     gunicorn jobpilot.wsgi:application --bind 0.0.0.0:7860
