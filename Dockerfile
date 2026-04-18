@@ -9,10 +9,12 @@ ENV PORT 7860
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies for Postgres
+# Install system dependencies for Postgres and general building
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc \
+    python3-dev \
+    musl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
