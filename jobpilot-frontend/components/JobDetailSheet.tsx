@@ -340,7 +340,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
             ) : (
               <div className="flex flex-wrap gap-2">
                 {job.key_skills && job.key_skills.length > 0 ? (
-                  job.key_skills.map((skill, index) => (
+                  job.key_skills.map((skill: string, index: number) => (
                     <span key={index} className="px-3 py-1.5 bg-surface-container-high border border-outline-variant/20 rounded-lg text-xs font-medium text-white shadow-sm hover:border-primary/30 transition-colors">
                       {skill}
                     </span>
@@ -367,7 +367,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                 />
               ) : job.description ? (
                 <div className="text-sm text-on-surface-variant leading-relaxed font-body space-y-4">
-                  {job.description.split('\n').map((line, i) => {
+                  {job.description.split('\n').map((line: string, i: number) => {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) return <div key={i} className="h-2" />;
                     if (trimmedLine.startsWith('•') || trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || /^\d+\./.test(trimmedLine)) {
@@ -406,7 +406,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
               </h4>
               <div className="space-y-0 relative">
                 <div className="absolute left-2.5 top-2 bottom-2 w-[1px] bg-gradient-to-b from-primary/50 to-transparent"></div>
-                {job.stage_history?.map((history, index) => (
+                {job.stage_history?.map((history: any, index: number) => (
                   <div key={history.id} className="relative pl-10 pb-8 last:pb-0">
                     <div className={`absolute left-0 top-1 w-5 h-5 rounded-full bg-surface border-2 ${index === 0 ? "border-primary" : "border-outline-variant/30"} z-10 flex items-center justify-center shadow-[0_0_10px_rgba(192,193,255,0.1)]`}>
                       {index === 0 && <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>}
@@ -443,7 +443,7 @@ export const JobDetailSheet = ({ isOpen, onClose, job: initialJob }: JobDetailSh
                   No notes yet. Add thoughts about company culture or salary expectations.
                 </p>
               ) : (
-                job.notes?.map(note => (
+                job.notes?.map((note: any) => (
                   <div key={note.id} className="bg-surface-container-low/50 p-4 rounded-lg border border-outline-variant/10 text-sm shadow-sm">
                     <p className="text-on-surface leading-relaxed">{note.content}</p>
                     <div className="flex justify-between items-center mt-3 pt-2 border-t border-outline-variant/5">

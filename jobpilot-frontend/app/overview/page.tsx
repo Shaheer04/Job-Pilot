@@ -46,8 +46,8 @@ export default function OverviewPage() {
     );
   }
 
-  const stats = hs?.stats;
-  const advice = hs?.advice;
+  const stats = hs?.stats as any;
+  const advice = hs?.advice as any;
 
   return (
     <div className="flex h-screen overflow-hidden">

@@ -43,6 +43,15 @@ export const useJobs = (searchTerm: string = '') => {
     },
   });
 
+  const deleteJobMutation = useMutation({
+    mutationFn: async (jobId: number) => {
+      await api.delete(`/jobs/${jobId}/`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+  });
+
   return {
     jobs: jobsQuery.data || EMPTY_JOBS,
     isLoading: jobsQuery.isLoading,
@@ -51,5 +60,6 @@ export const useJobs = (searchTerm: string = '') => {
     createJob: createJobMutation.mutateAsync,
     extractJob: extractJobMutation.mutateAsync,
     isExtracting: extractJobMutation.isPending,
+    deleteJob: deleteJobMutation.mutateAsync,
   };
 };

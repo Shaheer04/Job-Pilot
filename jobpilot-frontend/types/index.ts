@@ -16,6 +16,8 @@ export interface JobApplication {
   days_since_applied: number;
   created_at: string;
   updated_at: string;
+  stage_history?: StageHistory[];
+  notes?: Note[];
 }
 
 export interface StageHistory {
@@ -35,6 +37,24 @@ export interface AIAdvice {
   whats_working: string;
   main_problem: string;
   top_3_actions: string[];
+  actions: string[]; // Required by OverviewPage
+}
+
+export interface FunnelStep {
+  stage: string;
+  count: number;
+  pct: number; // OverviewPage uses .pct
+}
+
+export interface SourcePerformance {
+  source: string;
+  count: number;
+  rate: number; // OverviewPage uses .rate
+}
+
+export interface TopSkill {
+  name: string; // OverviewPage uses .name
+  count: number;
 }
 
 export interface HealthScore {
@@ -46,6 +66,11 @@ export interface HealthScore {
     stale_count: number;
     weekly_momentum: number;
     rating: 'Healthy' | 'Needs Attention' | 'Critical';
+    funnel: FunnelStep[];
+    source_performance: SourcePerformance[];
+    top_skills: TopSkill[];
   };
   advice: AIAdvice;
 }
+
+export type JobDetail = JobApplication;
