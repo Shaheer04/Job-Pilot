@@ -19,7 +19,7 @@
   "host_permissions": [
     "https://www.linkedin.com/*",
     "https://www.indeed.com/*",
-    "http://127.0.0.1:8000/*"
+    "https://shaheer-ipynb-jobpilot-api.hf.space/*"
   ],
   "background": {
     "service_worker": "background.js"

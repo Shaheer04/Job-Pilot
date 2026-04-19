@@ -1,5 +1,5 @@
 // background.js
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://shaheer-ipynb-jobpilot-api.hf.space";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.removeAll(() => {
