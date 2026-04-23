@@ -54,7 +54,12 @@ function showFloatingBtn(x, y, text) {
     e.preventDefault();
     e.stopPropagation();
     console.log("Floating button clicked!");
-    showExtractionModal(text, window.location.hostname);
+    
+    let source = "External";
+    if (window.location.hostname.includes("linkedin.com")) source = "LinkedIn";
+    else if (window.location.hostname.includes("indeed.com")) source = "Indeed";
+    
+    showExtractionModal(text, source);
     removeFloatingBtn();
   };
 
@@ -210,6 +215,10 @@ function renderModalForm(details, description, source) {
         </div>
       </div>
       <div class="jobpilot-field">
+        <label>Source</label>
+        <input type="text" id="jp-source" value="${source || details.source || ''}" placeholder="e.g. LinkedIn, Indeed">
+      </div>
+      <div class="jobpilot-field">
         <label>Key Skills (comma separated)</label>
         <input type="text" id="jp-skills" value="${(details.key_skills || []).join(', ')}">
       </div>
@@ -233,7 +242,7 @@ function renderModalForm(details, description, source) {
       experience_required: document.getElementById("jp-experience").value,
       key_skills: skillsArray,
       description: description,
-      source: source || details.source || "External",
+      source: document.getElementById("jp-source").value || "External",
       applied_date: new Date().toISOString().split('T')[0]
     };
 

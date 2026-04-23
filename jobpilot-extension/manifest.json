@@ -18,7 +18,7 @@
   ],
   "host_permissions": [
     "https://www.linkedin.com/*",
-    "https://www.indeed.com/*",
+    "https://pk.indeed.com/*",
     "https://shaheer-ipynb-jobpilot-api.hf.space/*"
   ],
   "background": {
@@ -28,7 +28,7 @@
     {
       "matches": [
         "https://www.linkedin.com/*",
-        "https://www.indeed.com/*"
+        "https://pk.indeed.com/*"
       ],
       "js": ["content.js"],
       "css": ["content.css"]
@@ -37,7 +37,7 @@
   "web_accessible_resources": [
     {
       "resources": ["logo.svg"],
-      "matches": ["https://www.linkedin.com/*", "https://www.indeed.com/*"]
+      "matches": ["https://www.linkedin.com/*", "https://pk.indeed.com/*"]
     }
   ]
 }

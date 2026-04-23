@@ -43,9 +43,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         body: JSON.stringify({ username, password })
       });
 
-      if (!response.ok) throw new Error("Invalid credentials");
-
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Invalid credentials");
+      }
+
       await chrome.storage.local.set({ access_token: data.access });
       showMain();
     } catch (err) {
@@ -105,10 +107,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       loading.classList.add("hidden");
       jobDetails.classList.remove("hidden");
+      const statusDisplay = document.getElementById("status-display");
+      if (statusDisplay) statusDisplay.classList.add("hidden");
 
       document.getElementById("job-title").value = details.title || scrapedData?.title || "";
       document.getElementById("job-company").value = details.company || scrapedData?.company || "";
       document.getElementById("job-location").value = details.location || scrapedData?.location || "";
+      document.getElementById("job-source").value = forcedSource || details.source || "Unknown";
       document.getElementById("job-type").value = details.job_type || "Full-time";
       document.getElementById("job-salary").value = details.salary_range || "";
       
@@ -128,10 +133,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       title: document.getElementById("job-title").value,
       company: document.getElementById("job-company").value,
       location: document.getElementById("job-location").value,
+      source: document.getElementById("job-source").value,
       job_type: document.getElementById("job-type").value,
       salary_range: document.getElementById("job-salary").value,
       description: window.currentJobDescription,
-      source: window.currentJobSource,
       applied_date: new Date().toISOString().split('T')[0]
     };
 
