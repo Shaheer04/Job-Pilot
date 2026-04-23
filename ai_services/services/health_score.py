@@ -11,7 +11,7 @@ def calculate_stats(user):
     if total == 0:
         return {
             'total_applications': 0,
-            'stage_counts': {'applied': 0, 'followed_up': 0, 'interview': 0, 'offer': 0, 'rejected': 0, 'archived': 0},
+            'stage_counts': {'applied': 0, 'assessment': 0, 'followed_up': 0, 'interview': 0, 'offer': 0, 'rejected': 0, 'archived': 0},
             'interview_rate': 0,
             'best_source': 'N/A',
             'stale_count': 0,
@@ -25,7 +25,7 @@ def calculate_stats(user):
     
     # 1. Stage Counts & Funnel
     stages_qs = all_jobs.values('current_stage').annotate(count=Count('id'))
-    stage_counts = {'applied': 0, 'followed_up': 0, 'interview': 0, 'offer': 0, 'rejected': 0, 'archived': 0}
+    stage_counts = {'applied': 0, 'assessment': 0, 'followed_up': 0, 'interview': 0, 'offer': 0, 'rejected': 0, 'archived': 0}
     for item in stages_qs:
         stage_counts[item['current_stage']] = item['count']
     
@@ -66,7 +66,7 @@ def calculate_stats(user):
     seven_days_ago = timezone.now() - timedelta(days=7)
     stale_count = all_jobs.filter(
         updated_at__lt=seven_days_ago,
-        current_stage__in=['applied', 'followed_up']
+        current_stage__in=['applied', 'assessment', 'followed_up']
     ).count()
     
     # 5. Rating & Rule-Based Advice

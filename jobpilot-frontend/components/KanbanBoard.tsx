@@ -271,6 +271,7 @@ const KanbanColumn = ({
 
       const columns: { title: string; stage: JobStage; dotColor: string; bgColor: string; grayscale?: boolean }[] = [
       { title: "Applied", stage: "applied", dotColor: "bg-zinc-400", bgColor: "bg-zinc-500/[0.02]" },
+      { title: "Assessment", stage: "assessment", dotColor: "bg-amber-500", bgColor: "bg-amber-500/[0.03]" },
       { title: "Followed Up", stage: "followed_up", dotColor: "bg-indigo-500", bgColor: "bg-indigo-500/[0.03]" },
       { title: "Interview", stage: "interview", dotColor: "bg-primary", bgColor: "bg-primary/[0.03]" },
       { title: "Offer", stage: "offer", dotColor: "bg-tertiary", bgColor: "bg-tertiary/[0.03]" },

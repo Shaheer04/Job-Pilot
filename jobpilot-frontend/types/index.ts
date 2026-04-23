@@ -1,4 +1,4 @@
-export type JobStage = 'applied' | 'followed_up' | 'interview' | 'offer' | 'rejected' | 'archived';
+export type JobStage = 'applied' | 'assessment' | 'followed_up' | 'interview' | 'offer' | 'rejected' | 'archived';
 
 export interface JobApplication {
   id: number;

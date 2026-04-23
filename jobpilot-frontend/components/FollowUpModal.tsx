@@ -13,6 +13,7 @@ import {
   User
 } from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
+import { FollowUpSkeleton } from "./FollowUpSkeleton";
 
 interface FollowUpData {
   should_follow_up: boolean;
@@ -68,10 +69,7 @@ export const FollowUpModal = ({ isOpen, onClose, data, isLoading }: FollowUpModa
 
         <div className="p-8 overflow-y-auto max-h-[80vh] custom-scrollbar">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 space-y-4">
-              <div className="h-12 w-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-              <p className="text-sm font-bold text-white uppercase tracking-widest animate-pulse">Analyzing Job Context...</p>
-            </div>
+            <FollowUpSkeleton />
           ) : data?.error ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <AlertCircle size={48} className="text-error mb-4" />

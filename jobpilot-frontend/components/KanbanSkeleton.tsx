@@ -3,7 +3,7 @@
 import React from "react";
 
 export const KanbanSkeleton = () => {
-  const columns = ["Applied", "Followed Up", "Interview", "Offer", "Rejected", "Archived"];
+  const columns = ["Applied", "Assessment", "Followed Up", "Interview", "Offer", "Rejected", "Archived"];
   
   return (
     <div className="flex-1 overflow-x-auto p-8 h-full bg-surface">

@@ -7,6 +7,7 @@ class JobApplication (models.Model):
     
     STAGE_CHOICES = [
         ("applied", "Applied"),
+        ("assessment", "Assessment"),
         ("followed_up", "Followed Up"),
         ("interview", "Interview Scheduled"),
         ("offer", "Offer"),
